@@ -1,10 +1,10 @@
-# UAE CRM Secure v5
+# UAE CRM Secure v6
 
-Oprava po chybě v4:
-- odstraněna chyba `applyLang is not defined`,
-- zachována oprava kontaktů podle vybrané firmy z v3,
-- přidána viditelná tlačítka CZ / EN,
-- překlad hlavního nadpisu, popisu, vyhledávání a základních tlačítek.
+Oprava po chybě v5:
+- používá jednoduché `var` jazykové funkce bez rizika inicializační chyby,
+- zachovává funkční základ z v3,
+- zachovává správné filtrování kontaktů podle vybrané firmy,
+- přidává viditelná tlačítka CZ / EN.
 
 Nasazení:
 1. ZIP rozbalte.

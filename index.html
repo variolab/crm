@@ -50,7 +50,7 @@ function contact(id){return data.contacts.find(x=>x.id===id)||{}}
 function deal(id){return data.deals.find(x=>x.id===id)||{}}
 function qmatch(o){let q=document.getElementById('q')?.value.toLowerCase()||'';return JSON.stringify(o).toLowerCase().includes(q)}
 function showFatal(t,m){let b=document.getElementById('fatal');if(b){b.classList.remove('hidden');b.innerHTML='<h2>'+esc(t)+'</h2><pre>'+esc(m)+'</pre>'}}
-async function init(){const res=await sb.auth.getSession();session=res.data.session;if(!session){renderAuth();return}const pr=await sb.from('profiles').select('*').eq('id',session.user.id).single();if(pr.error){showFatal('Profil se nepodařilo načíst',pr.error.message);return}profile=pr.data;renderShell();if(isApproved())await loadAll();else renderAll()}
+async function init(){const res=await sb.auth.getSession();session=res.data.session;if(!session){renderAuth();return}const pr=await sb.from('profiles').select('*').eq('id',session.user.id).single();if(pr.error){showFatal('Profil se nepodařilo načíst',pr.error.message);return}profile=pr.data;renderShell(); setTimeout(applyLangSimple,0);if(isApproved())await loadAll();else renderAll()}
 function renderAuth(){app.classList.add('hidden');auth.innerHTML='<div class="grid2"><div class="card"><h1>Secure UAE CRM</h1><p class="muted">Přihlášení do zabezpečeného CRM.</p><pre>URL = '+esc(SUPABASE_URL)+'\nSupabase OK</pre></div><div class="card"><h2>Přihlášení</h2><label>E-mail<input id="loginEmail"></label><label>Heslo<input id="loginPassword" type="password"></label><button onclick="login()">Přihlásit</button><hr><h2>Registrace</h2><label>Jméno<input id="regName"></label><label>E-mail<input id="regEmail"></label><label>Heslo<input id="regPassword" type="password"></label><button class="secondary" onclick="register()">Registrovat</button><p id="msg" class="small muted"></p></div></div>'}
 function msg(x){document.getElementById('msg').textContent=x}
 async function login(){let r=await sb.auth.signInWithPassword({email:loginEmail.value.trim(),password:loginPassword.value});if(r.error){msg(r.error.message);return}location.reload()}
@@ -108,12 +108,12 @@ const I18N = {
   }
 };
 let appLang = localStorage.getItem("uae-crm-lang") || "cs";
-function setLang(lang){
+function setLangOld(lang){
   appLang = lang;
   localStorage.setItem("uae-crm-lang", lang);
   applyLang();
 }
-function applyLang(){
+function applyLangOld(){
   const d = I18N[appLang] || I18N.cs;
   const h1 = document.querySelector("h1");
   if (h1) h1.textContent = d.title;
@@ -137,88 +137,67 @@ function refreshDealContacts(){
 
 applyLang();
 
-const CRM_I18N_SAFE = {
-  cs: {
-    title: "Kontrola obchodních aktivit v SAE",
-    lead: "Online CRM napojené na Supabase. Přihlášení, registrace, schvalování uživatelů a role owner / user_admin / sales_user.",
-    search: "Hledat firmu, obchodníka, kontakt, deal, CORE číslo...",
-    logout: "Odhlásit",
-    refresh: "Refresh",
-    exportReps: "Export obchodníků",
-    exportCompanies: "Export firem",
-    exportDeals: "Export dealů",
-    newRep: "+ Nový obchodník",
-    newCompany: "+ Nová firma",
-    newContact: "+ Nový kontakt",
-    newDeal: "+ Nový deal"
-  },
-  en: {
-    title: "UAE Sales Activity Control",
-    lead: "Online CRM connected to Supabase. Login, registration, user approval and owner / user_admin / sales_user roles.",
-    search: "Search company, sales rep, contact, deal, CORE number...",
-    logout: "Logout",
-    refresh: "Refresh",
-    exportReps: "Export sales reps",
-    exportCompanies: "Export companies",
-    exportDeals: "Export deals",
-    newRep: "+ New sales rep",
-    newCompany: "+ New company",
-    newContact: "+ New contact",
-    newDeal: "+ New deal"
-  }
-};
+var crmCurrentLang = localStorage.getItem("uae-crm-lang") || "cs";
 
-let crmLangSafe = localStorage.getItem("uae-crm-lang") || "cs";
-
-function setLangSafe(lang) {
-  crmLangSafe = lang;
+function setLangSimple(lang) {
+  crmCurrentLang = lang;
   localStorage.setItem("uae-crm-lang", lang);
-  applyLangSafe();
+  applyLangSimple();
 }
 
-function applyLangSafe() {
-  const d = CRM_I18N_SAFE[crmLangSafe] || CRM_I18N_SAFE.cs;
+function applyLangSimple() {
+  var isEn = crmCurrentLang === "en";
 
-  const h1 = document.querySelector("h1");
-  if (h1) h1.textContent = d.title;
+  var title = document.querySelector("h1");
+  if (title) title.textContent = isEn ? "UAE Sales Activity Control" : "Kontrola obchodních aktivit v SAE";
 
-  const lead = document.querySelector(".lead");
-  if (lead) lead.textContent = d.lead;
+  var lead = document.querySelector(".lead");
+  if (lead) {
+    lead.textContent = isEn
+      ? "Online CRM connected to Supabase. Login, registration, user approval and owner / user_admin / sales_user roles."
+      : "Online CRM napojené na Supabase. Přihlášení, registrace, schvalování uživatelů a role owner / user_admin / sales_user.";
+  }
 
-  const q = document.getElementById("q");
-  if (q) q.placeholder = d.search;
+  var q = document.getElementById("q");
+  if (q) q.placeholder = isEn ? "Search company, sales rep, contact, deal, CORE number..." : "Hledat firmu, obchodníka, kontakt, deal, CORE číslo...";
 
-  const map = new Map([
-    ["Odhlásit", d.logout], ["Logout", d.logout],
-    ["Refresh", d.refresh],
-    ["Export obchodníků", d.exportReps], ["Export sales reps", d.exportReps],
-    ["Export firem", d.exportCompanies], ["Export companies", d.exportCompanies],
-    ["Export dealů", d.exportDeals], ["Export deals", d.exportDeals],
-    ["+ Nový obchodník", d.newRep], ["+ New sales rep", d.newRep],
-    ["+ Nová firma", d.newCompany], ["+ New company", d.newCompany],
-    ["+ Nový kontakt", d.newContact], ["+ New contact", d.newContact],
-    ["+ Nový deal", d.newDeal], ["+ New deal", d.newDeal]
-  ]);
+  replaceButtonText("Odhlásit", isEn ? "Logout" : "Odhlásit");
+  replaceButtonText("Logout", isEn ? "Logout" : "Odhlásit");
+  replaceButtonText("Export obchodníků", isEn ? "Export sales reps" : "Export obchodníků");
+  replaceButtonText("Export sales reps", isEn ? "Export sales reps" : "Export obchodníků");
+  replaceButtonText("Export firem", isEn ? "Export companies" : "Export firem");
+  replaceButtonText("Export companies", isEn ? "Export companies" : "Export firem");
+  replaceButtonText("Export dealů", isEn ? "Export deals" : "Export dealů");
+  replaceButtonText("Export deals", isEn ? "Export deals" : "Export dealů");
+  replaceButtonText("+ Nový obchodník", isEn ? "+ New sales rep" : "+ Nový obchodník");
+  replaceButtonText("+ New sales rep", isEn ? "+ New sales rep" : "+ Nový obchodník");
+  replaceButtonText("+ Nová firma", isEn ? "+ New company" : "+ Nová firma");
+  replaceButtonText("+ New company", isEn ? "+ New company" : "+ Nová firma");
+  replaceButtonText("+ Nový kontakt", isEn ? "+ New contact" : "+ Nový kontakt");
+  replaceButtonText("+ New contact", isEn ? "+ New contact" : "+ Nový kontakt");
+  replaceButtonText("+ Nový deal", isEn ? "+ New deal" : "+ Nový deal");
+  replaceButtonText("+ New deal", isEn ? "+ New deal" : "+ Nový deal");
 
-  document.querySelectorAll("button").forEach(btn => {
-    const txt = btn.textContent.trim();
-    if (map.has(txt)) btn.textContent = map.get(txt);
-  });
-
-  const cs = document.getElementById("btnLangCs");
-  const en = document.getElementById("btnLangEn");
+  var cs = document.getElementById("btnLangCs");
+  var en = document.getElementById("btnLangEn");
   if (cs && en) {
-    cs.style.fontWeight = crmLangSafe === "cs" ? "900" : "700";
-    en.style.fontWeight = crmLangSafe === "en" ? "900" : "700";
+    cs.style.fontWeight = isEn ? "700" : "900";
+    en.style.fontWeight = isEn ? "900" : "700";
   }
 }
 
-/* Compatibility with older v3 injected calls */
-function applyLang() { applyLangSafe(); }
-function setLang(lang) { setLangSafe(lang); }
+function replaceButtonText(from, to) {
+  document.querySelectorAll("button").forEach(function(btn) {
+    if (btn.textContent.trim() === from) btn.textContent = to;
+  });
+}
 
-applyLangSafe();
+/* compatibility: if older code calls applyLang/setLang */
+function applyLang() { applyLangSimple(); }
+function setLang(lang) { setLangSimple(lang); }
+
 init();
+setTimeout(applyLangSimple, 0);
 </script>
 </body>
 </html>
