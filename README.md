@@ -1,13 +1,13 @@
-# UAE CRM Secure – English clean version
-
-This version removes all remaining calls from the previous language-switch experiments.
+# UAE CRM Secure – English export fix
 
 Fix:
-- removed `crmApplyLanguageSafe is not defined`,
-- English-only UI,
-- Supabase connection preserved,
-- role-based permissions preserved,
-- contact filtering by selected company preserved.
+- CSV exports now show readable names first:
+  - companyName
+  - contactName
+  - salesRepName
+- technical UUID values are moved to the end as `technical...` columns.
+- CSV separator remains semicolon `;`.
+- Supabase connection and existing permissions are preserved.
 
 Deployment:
 1. Unzip.
