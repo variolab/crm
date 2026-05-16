@@ -1,16 +1,11 @@
-# UAE CRM Secure – English export fix
+# UAE CRM Secure – English export fix v2
 
-Fix:
-- CSV exports now show readable names first:
-  - companyName
-  - contactName
-  - salesRepName
-- technical UUID values are moved to the end as `technical...` columns.
-- CSV separator remains semicolon `;`.
-- Supabase connection and existing permissions are preserved.
+Deals export now starts with readable columns:
+- companyName
+- contactName
+- salesRepName
+- dealTitle
 
-Deployment:
-1. Unzip.
-2. Upload `index.html`, `.nojekyll`, `README.md`.
-3. Commit changes.
-4. Press Ctrl + F5 after deployment.
+Technical UUID fields are moved to the end.
+
+If export still starts with `id, company_id, contact_id, sales_rep_id`, the browser or GitHub Pages is still serving the old `index.html`. After upload, wait for deployment and press Ctrl + F5.

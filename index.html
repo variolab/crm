@@ -16,6 +16,7 @@ function applyLang(){ return true; }
 <style>
 :root{--bg:#f6f8fb;--line:#dbe3ef;--dark:#111827;--muted:#64748b;--red:#b91c1c}*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Segoe UI,Arial,sans-serif;color:#111827}.wrap{max-width:1320px;margin:auto;padding:24px}.card{background:white;border:1px solid var(--line);border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 1px 4px #0001}h1{font-size:32px;margin:8px 0}h2{font-size:18px;margin:0 0 12px}.muted{color:var(--muted)}.small{font-size:12px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}.top{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}.actions,.tabs{display:flex;gap:8px;flex-wrap:wrap}.btn,.tab,button{border:0;border-radius:12px;padding:10px 13px;font-weight:700;cursor:pointer;background:#111827;color:white}.secondary,.tab{background:white;color:#334155;border:1px solid var(--line)}.danger{background:white;color:var(--red);border:1px solid #fecaca}.tab.active{background:#111827;color:white}.toolbar{display:grid;grid-template-columns:1fr auto auto auto auto;gap:10px;margin:16px 0}input,select,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;background:white;font:inherit;margin:4px 0 10px}textarea{min-height:80px}.section{display:none}.section.active{display:block}.hidden{display:none!important}.badge{display:inline-block;border-radius:999px;padding:4px 8px;background:#e2e8f0;font-size:12px;font-weight:700}.green{background:#d1fae5;color:#065f46}.amber{background:#fef3c7;color:#92400e}.red{background:#fee2e2;color:#991b1b}.blue{background:#dbeafe;color:#1e40af}.metric .value{font-size:26px;font-weight:800}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:14px;background:white}table{border-collapse:collapse;width:100%;min-width:1000px}th,td{padding:9px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;vertical-align:top}th{background:#f1f5f9}.modal{position:fixed;inset:0;background:#0f172a77;display:none;align-items:center;justify-content:center;padding:18px}.modal.show{display:flex}.modalbox{background:white;border-radius:20px;max-width:900px;width:100%;max-height:90vh;overflow:auto}.modalhead{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:14px}.modalbody{padding:16px}.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.full{grid-column:1/-1}.notice{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:12px;padding:12px;margin:12px 0}pre{background:#111827;color:#e5e7eb;padding:12px;border-radius:10px;overflow:auto}@media(max-width:900px){.grid2,.grid3,.grid5,.toolbar,.formgrid{grid-template-columns:1fr}.wrap{padding:14px}}
 </style>
+<!-- export-fix-v2-readable-names -->
 </head>
 <body>
 <div class="wrap">
@@ -101,7 +102,95 @@ async function saveDeal(id){let f=form('fDeal');f.value=Number(f.value||0);f.pro
 function openActivity(id=''){let a=id?data.activities.find(x=>x.id===id):{company_id:data.companies[0]?.id||'',deal_id:'',subject:'',date:today(),result:'Planned'};modal(id?'Edit activity':'New activity','<form id="fAct" class="formgrid"><label>Company<select name="company_id">'+companyOpts(a.company_id)+'</select></label><label>Deal<select name="deal_id">'+dealOpts(a.company_id,a.deal_id)+'</select></label><label>Subject<input name="subject" value="'+esc(a.subject)+'"></label><label>Date<input type="date" name="date" value="'+esc(a.date||today())+'"></label><label>Result<input name="result" value="'+esc(a.result||'')+'"></label><div class="full"><button type="button" class="btn" onclick="saveActivity(\''+id+'\')">Save</button></div></form>')}
 async function saveActivity(id){let f=form('fAct');if(!f.deal_id)delete f.deal_id;await upsert('activities',id,f)}
 async function upsert(table,id,payload){payload.updated_by=profile.id;let r=id?await sb.from(table).update(payload).eq('id',id):await sb.from(table).insert(payload);if(r.error){alert(r.error.message);return}closeModal();await loadAll()}
-function exportCSV(table){if(!isAdmin())return;let rows=data[table]||[];downloadCSV('uae-crm-'+table+'.csv',rows)}
+function exportCSV_OLD(table){if(!isAdmin())return;let rows=data[table]||[];downloadCSV('uae-crm-'+table+'.csv',rows)}
+
+function exportCSV(table){
+  if(!isAdmin()) return;
+
+  let rows = [];
+
+  if(table === 'deals'){
+    rows = (data.deals || []).map(d => ({
+      companyName: (company(d.company_id).company || ''),
+      contactName: (contact(d.contact_id).name || ''),
+      salesRepName: (rep(d.sales_rep_id).name || ''),
+      dealTitle: d.title || '',
+      product: d.product || '',
+      value: d.value || 0,
+      currency: d.currency || '',
+      stage: d.stage || '',
+      probability: d.probability || 0,
+      closeDate: d.close_date || '',
+      offerNo: d.offer_no || '',
+      coreNumber: d.core_number || '',
+      crmComplete: d.crm_complete === true ? 'yes' : 'no',
+      coreComplete: d.core_complete === true ? 'yes' : 'no',
+      paperFolder: d.paper_folder === true ? 'yes' : 'no',
+      offerPdf: d.offer_pdf === true ? 'yes' : 'no',
+      lastActivityDate: d.last_activity_date || '',
+      lastActivity: d.last_activity || '',
+      technicalDealId: d.id || '',
+      technicalCompanyId: d.company_id || '',
+      technicalContactId: d.contact_id || '',
+      technicalSalesRepId: d.sales_rep_id || ''
+    }));
+    return downloadCSV('uae-crm-deals.csv', rows);
+  }
+
+  if(table === 'companies'){
+    rows = (data.companies || []).map(c => ({
+      companyName: c.company || '',
+      salesRepName: (rep(c.sales_rep_id).name || ''),
+      segment: c.segment || '',
+      emirate: c.emirate || '',
+      status: c.status || '',
+      source: c.source || '',
+      nextStep: c.next_step || '',
+      nextDate: c.next_date || '',
+      notes: c.notes || '',
+      technicalCompanyId: c.id || '',
+      technicalSalesRepId: c.sales_rep_id || ''
+    }));
+    return downloadCSV('uae-crm-companies.csv', rows);
+  }
+
+  if(table === 'contacts'){
+    rows = (data.contacts || []).map(c => ({
+      companyName: (company(c.company_id).company || ''),
+      contactName: c.name || '',
+      position: c.position || '',
+      decisionRole: c.decision_role || '',
+      email: c.email || '',
+      phone: c.phone || '',
+      notes: c.notes || '',
+      technicalContactId: c.id || '',
+      technicalCompanyId: c.company_id || ''
+    }));
+    return downloadCSV('uae-crm-contacts.csv', rows);
+  }
+
+  if(table === 'sales_representatives'){
+    rows = (data.sales_representatives || []).map(r => ({
+      salesRepName: r.name || '',
+      company: r.company || '',
+      roleTitle: r.role_title || '',
+      email: r.email || '',
+      phone: r.phone || '',
+      whatsapp: r.whatsapp || '',
+      territory: r.territory || '',
+      active: r.active === true ? 'yes' : 'no',
+      targetMonthlyActivities: r.target_monthly_activities || 0,
+      targetMonthlyPipeline: r.target_monthly_pipeline || 0,
+      notes: r.notes || '',
+      technicalSalesRepId: r.id || ''
+    }));
+    return downloadCSV('uae-crm-sales-representatives.csv', rows);
+  }
+
+  rows = data[table] || [];
+  return downloadCSV('uae-crm-' + table + '.csv', rows);
+}
+
 function downloadCSV(filename,rows){if(!rows.length)return alert('No data');let heads=[...new Set(rows.flatMap(r=>Object.keys(r)))],escCsv=v=>'"'+String(v??'').replaceAll('"','""')+'"',csv='\ufeff'+[heads.join(';'),...rows.map(r=>heads.map(h=>escCsv(r[h])).join(';'))].join('\n'),blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url)}
 
 const I18N = {
