@@ -1,10 +1,12 @@
-# UAE CRM Secure v6
+# UAE CRM Secure v7
 
-Oprava po chybě v5:
-- používá jednoduché `var` jazykové funkce bez rizika inicializační chyby,
-- zachovává funkční základ z v3,
-- zachovává správné filtrování kontaktů podle vybrané firmy,
-- přidává viditelná tlačítka CZ / EN.
+Opravy:
+- přepínač CZ / EN je viditelně přímo nad záložkami,
+- přepíná nadpis, popis, vyhledávání, základní tlačítka a názvy záložek,
+- vysvětlen účel vyhledávacího řádku,
+- zachováno správné filtrování kontaktů podle firmy při zakládání dealu.
+
+Vyhledávací řádek je globální filtr. Filtruje seznamy a karty podle názvu firmy, kontaktu, obchodníka, dealu, CORE čísla apod.
 
 Nasazení:
 1. ZIP rozbalte.
