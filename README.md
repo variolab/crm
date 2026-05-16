@@ -1,11 +1,12 @@
-# UAE CRM Secure v8
+# UAE CRM Secure v9
 
 Opravy:
-- bezpečný přepínač CZ / EN bez zásahu do generování záložek,
-- vysvětlen účel vyhledávacího řádku,
-- zachováno filtrování kontaktů podle vybrané firmy při zakládání dealu.
+- globální překlad celé viditelné UI vrstvy,
+- překládají se i dynamicky generovaná modální okna,
+- zachováno správné filtrování kontaktů podle firmy při zakládání dealu,
+- vyhledávací řádek je označen jako globální filtr CRM záznamů.
 
-Vyhledávací řádek je globální filtr CRM záznamů – filtruje firmy, kontakty, obchodníky, dealy a CORE čísla.
+Vyhledávací řádek slouží jako globální filtr. Filtruje firmy, kontakty, obchodníky, dealy a CORE čísla.
 
 Nasazení:
 1. ZIP rozbalte.

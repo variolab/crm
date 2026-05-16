@@ -20,8 +20,8 @@
     </div>
     <div id="pending" class="notice hidden"></div>
   <div id="languageStrip" class="actions" style="margin:14px 0;">
-    <button id="langCsTop" class="btn secondary" onclick="crmSetLanguageSafe('cs')">CZ</button>
-    <button id="langEnTop" class="btn secondary" onclick="crmSetLanguageSafe('en')">EN</button>
+    <button id="langCsTop" class="btn secondary" onclick="setCrmLanguageV9('cs')">CZ</button>
+    <button id="langEnTop" class="btn secondary" onclick="setCrmLanguageV9('en')">EN</button>
     <span id="searchHint" class="pill">Vyhledávání níže filtruje záznamy v CRM</span>
   </div>
     <div id="tabs" class="tabs"></div>
@@ -285,7 +285,317 @@ function setLangSimple(lang) { crmSetLanguageSafe(lang); }
 function applyLang() { crmApplyLanguageSafe(); }
 function applyLangSimple() { crmApplyLanguageSafe(); }
 
+
+/* ===== CRM full UI translation patch v9 ===== */
+var crmLangV9 = localStorage.getItem("uae-crm-lang") || "cs";
+
+var UI_V9 = {
+  cs: {
+    title: "Kontrola obchodních aktivit v SAE",
+    lead: "Online CRM napojené na Supabase. Přihlášení, registrace, schvalování uživatelů a role owner / user_admin / sales_user.",
+    hint: "Vyhledávání níže filtruje záznamy v CRM",
+    search: "Vyhledávání / Search – filtruje firmy, kontakty, dealy a obchodníky",
+    map: {
+      "Dashboard": "Dashboard",
+      "Users": "Uživatelé",
+      "Uživatelé": "Uživatelé",
+      "Sales reps": "Obchodníci",
+      "Obchodníci": "Obchodníci",
+      "Companies": "Firmy",
+      "Firmy": "Firmy",
+      "Contacts": "Kontakty",
+      "Kontakty": "Kontakty",
+      "Deals / Offers": "Dealy / nabídky",
+      "Dealy / nabídky": "Dealy / nabídky",
+      "Activities": "Aktivity",
+      "Aktivity": "Aktivity",
+      "Process control": "Procesní kontrola",
+      "Procesní kontrola": "Procesní kontrola",
+
+      "Export sales reps": "Export obchodníků",
+      "Export obchodníků": "Export obchodníků",
+      "Export companies": "Export firem",
+      "Export firem": "Export firem",
+      "Export deals": "Export dealů",
+      "Export dealů": "Export dealů",
+      "Refresh": "Refresh",
+      "Logout": "Odhlásit",
+      "Odhlásit": "Odhlásit",
+
+      "+ New sales rep": "+ Obchodník",
+      "+ Nový obchodník": "+ Obchodník",
+      "+ Obchodník": "+ Obchodník",
+      "+ New company": "+ Firma",
+      "+ Nová firma": "+ Firma",
+      "+ Firma": "+ Firma",
+      "+ New contact": "+ Kontakt",
+      "+ Nový kontakt": "+ Kontakt",
+      "+ Kontakt": "+ Kontakt",
+      "+ New deal": "+ Deal",
+      "+ Nový deal": "+ Deal",
+      "+ Deal": "+ Deal",
+      "+ New activity": "+ Aktivita",
+      "+ Nová aktivita": "+ Aktivita",
+      "+ Aktivita": "+ Aktivita",
+
+      "New sales representative": "Nový obchodník",
+      "Edit sales representative": "Úprava obchodníka",
+      "New company": "Nová firma",
+      "Edit company": "Úprava firmy",
+      "New contact": "Nový kontakt",
+      "Edit contact": "Úprava kontaktu",
+      "New deal": "Nový deal",
+      "Edit deal": "Úprava dealu",
+      "New activity": "Nová aktivita",
+      "Edit activity": "Úprava aktivity",
+
+      "Close": "Zavřít",
+      "Zavřít": "Zavřít",
+      "Save": "Uložit",
+      "Uložit": "Uložit",
+
+      "Name": "Jméno",
+      "Company": "Firma",
+      "Role": "Role",
+      "Territory": "Teritorium",
+      "Email": "E-mail",
+      "Phone": "Telefon",
+      "WhatsApp": "WhatsApp",
+      "Target activities": "Cíl aktivit",
+      "Target pipeline": "Cíl pipeline",
+      "Active": "Aktivní",
+      "Notes": "Poznámky",
+      "Sales rep": "Obchodník",
+      "Segment": "Segment",
+      "Emirate": "Emirát",
+      "Status": "Status",
+      "Source": "Zdroj",
+      "Next": "Další krok",
+      "Date": "Datum",
+      "Position": "Pozice",
+      "Decision role": "Role v rozhodování",
+      "Title": "Název",
+      "Product": "Produkt",
+      "Stage": "Fáze",
+      "Value": "Hodnota",
+      "Currency": "Měna",
+      "Probability": "Pravděpodobnost",
+      "Offer": "Nabídka",
+      "CORE": "CORE",
+      "Contact": "Kontakt",
+      "Subject": "Předmět",
+      "Result": "Výsledek",
+      "Type": "Typ",
+      "Deal": "Deal",
+
+      "Open pipeline": "Open pipeline",
+      "Weighted": "Vážená hodnota",
+      "Bez update > 7 dní": "Bez update > 7 dní"
+    }
+  },
+  en: {
+    title: "UAE Sales Activity Control",
+    lead: "Online CRM connected to Supabase. Login, registration, user approval and owner / user_admin / sales_user roles.",
+    hint: "The search field below filters CRM records",
+    search: "Search – filters companies, contacts, deals and sales reps",
+    map: {
+      "Dashboard": "Dashboard",
+      "Uživatelé": "Users",
+      "Users": "Users",
+      "Obchodníci": "Sales reps",
+      "Sales reps": "Sales reps",
+      "Firmy": "Companies",
+      "Companies": "Companies",
+      "Kontakty": "Contacts",
+      "Contacts": "Contacts",
+      "Dealy / nabídky": "Deals / Offers",
+      "Deals / Offers": "Deals / Offers",
+      "Aktivity": "Activities",
+      "Activities": "Activities",
+      "Procesní kontrola": "Process control",
+      "Process control": "Process control",
+
+      "Export obchodníků": "Export sales reps",
+      "Export sales reps": "Export sales reps",
+      "Export firem": "Export companies",
+      "Export companies": "Export companies",
+      "Export dealů": "Export deals",
+      "Export deals": "Export deals",
+      "Refresh": "Refresh",
+      "Odhlásit": "Logout",
+      "Logout": "Logout",
+
+      "+ Obchodník": "+ Sales rep",
+      "+ Nový obchodník": "+ Sales rep",
+      "+ New sales rep": "+ Sales rep",
+      "+ Firma": "+ Company",
+      "+ Nová firma": "+ Company",
+      "+ New company": "+ Company",
+      "+ Kontakt": "+ Contact",
+      "+ Nový kontakt": "+ Contact",
+      "+ New contact": "+ Contact",
+      "+ Deal": "+ Deal",
+      "+ Nový deal": "+ Deal",
+      "+ New deal": "+ Deal",
+      "+ Aktivita": "+ Activity",
+      "+ Nová aktivita": "+ Activity",
+      "+ New activity": "+ Activity",
+
+      "Nový obchodník": "New sales representative",
+      "Úprava obchodníka": "Edit sales representative",
+      "New sales representative": "New sales representative",
+      "Edit sales representative": "Edit sales representative",
+      "Nová firma": "New company",
+      "Úprava firmy": "Edit company",
+      "New company": "New company",
+      "Edit company": "Edit company",
+      "Nový kontakt": "New contact",
+      "Úprava kontaktu": "Edit contact",
+      "New contact": "New contact",
+      "Edit contact": "Edit contact",
+      "Nový deal": "New deal",
+      "Úprava dealu": "Edit deal",
+      "New deal": "New deal",
+      "Edit deal": "Edit deal",
+      "Nová aktivita": "New activity",
+      "Úprava aktivity": "Edit activity",
+      "New activity": "New activity",
+      "Edit activity": "Edit activity",
+
+      "Zavřít": "Close",
+      "Close": "Close",
+      "Uložit": "Save",
+      "Save": "Save",
+
+      "Jméno": "Name",
+      "Name": "Name",
+      "Firma": "Company",
+      "Company": "Company",
+      "Role": "Role",
+      "Teritorium": "Territory",
+      "Territory": "Territory",
+      "E-mail": "Email",
+      "Email": "Email",
+      "Telefon": "Phone",
+      "Phone": "Phone",
+      "WhatsApp": "WhatsApp",
+      "Cíl aktivit": "Target activities",
+      "Target activities": "Target activities",
+      "Cíl pipeline": "Target pipeline",
+      "Target pipeline": "Target pipeline",
+      "Aktivní": "Active",
+      "Active": "Active",
+      "Poznámky": "Notes",
+      "Notes": "Notes",
+      "Obchodník": "Sales rep",
+      "Sales rep": "Sales rep",
+      "Segment": "Segment",
+      "Emirát": "Emirate",
+      "Emirate": "Emirate",
+      "Status": "Status",
+      "Zdroj": "Source",
+      "Source": "Source",
+      "Další krok": "Next",
+      "Next": "Next",
+      "Datum": "Date",
+      "Date": "Date",
+      "Pozice": "Position",
+      "Position": "Position",
+      "Role v rozhodování": "Decision role",
+      "Decision role": "Decision role",
+      "Název": "Title",
+      "Title": "Title",
+      "Produkt": "Product",
+      "Product": "Product",
+      "Fáze": "Stage",
+      "Stage": "Stage",
+      "Hodnota": "Value",
+      "Value": "Value",
+      "Měna": "Currency",
+      "Currency": "Currency",
+      "Pravděpodobnost": "Probability",
+      "Probability": "Probability",
+      "Nabídka": "Offer",
+      "Offer": "Offer",
+      "CORE": "CORE",
+      "Kontakt": "Contact",
+      "Contact": "Contact",
+      "Předmět": "Subject",
+      "Subject": "Subject",
+      "Výsledek": "Result",
+      "Result": "Result",
+      "Typ": "Type",
+      "Type": "Type",
+      "Deal": "Deal",
+
+      "Open pipeline": "Open pipeline",
+      "Vážená hodnota": "Weighted",
+      "Weighted": "Weighted",
+      "Bez update > 7 dní": "No update > 7 days"
+    }
+  }
+};
+
+function setCrmLanguageV9(lang) {
+  crmLangV9 = lang;
+  localStorage.setItem("uae-crm-lang", lang);
+  applyCrmLanguageV9();
+}
+
+function applyCrmLanguageV9() {
+  var d = UI_V9[crmLangV9] || UI_V9.cs;
+  var h1 = document.querySelector("h1");
+  if (h1) h1.textContent = d.title;
+  var lead = document.querySelector(".lead");
+  if (lead) lead.textContent = d.lead;
+  var q = document.getElementById("q");
+  if (q) q.placeholder = d.search;
+  var hint = document.getElementById("searchHint");
+  if (hint) hint.textContent = d.hint;
+
+  translateExactTextNodesV9(document.body, d.map);
+
+  var cs = document.getElementById("langCsTop");
+  var en = document.getElementById("langEnTop");
+  if (cs && en) {
+    cs.style.fontWeight = crmLangV9 === "cs" ? "900" : "700";
+    en.style.fontWeight = crmLangV9 === "en" ? "900" : "700";
+  }
+}
+
+function translateExactTextNodesV9(root, map) {
+  if (!root) return;
+  var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+  var nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach(function(node) {
+    var original = node.nodeValue;
+    var trimmed = original.trim();
+    if (!trimmed) return;
+    if (Object.prototype.hasOwnProperty.call(map, trimmed)) {
+      node.nodeValue = original.replace(trimmed, map[trimmed]);
+    }
+  });
+}
+
+/* compatibility with previous names and buttons */
+function setCrmLanguage(lang) { setCrmLanguageV9(lang); }
+function crmSetLanguageSafe(lang) { setCrmLanguageV9(lang); }
+function setLang(lang) { setCrmLanguageV9(lang); }
+function setLangSimple(lang) { setCrmLanguageV9(lang); }
+function applyCrmLanguage() { applyCrmLanguageV9(); }
+function crmApplyLanguageSafe() { applyCrmLanguageV9(); }
+function applyLang() { applyCrmLanguageV9(); }
+function applyLangSimple() { applyCrmLanguageV9(); }
+
+var crmTranslationObserverV9 = new MutationObserver(function() {
+  clearTimeout(window.__crmLangTimerV9);
+  window.__crmLangTimerV9 = setTimeout(applyCrmLanguageV9, 30);
+});
+crmTranslationObserverV9.observe(document.body, { childList: true, subtree: true });
+
 init();
+setTimeout(applyCrmLanguageV9, 0);
 setTimeout(crmApplyLanguageSafe, 0);
 setTimeout(applyLangSimple, 0);
 </script>
