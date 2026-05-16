@@ -1,16 +1,16 @@
-# UAE CRM Secure – English version
+# UAE CRM Secure – English clean version
 
-Complete English-only version of the Supabase CRM.
+This version removes all remaining calls from the previous language-switch experiments.
 
-Changes:
-- removed CZ/EN language switch to avoid instability,
-- all main UI elements are normalized to English,
-- search field is explained as a global CRM filter,
-- deal contact selection remains filtered by selected company,
-- Supabase connection and role-based permissions are preserved.
+Fix:
+- removed `crmApplyLanguageSafe is not defined`,
+- English-only UI,
+- Supabase connection preserved,
+- role-based permissions preserved,
+- contact filtering by selected company preserved.
 
 Deployment:
-1. Unzip the package.
-2. Upload `index.html`, `.nojekyll`, and `README.md` to the GitHub repository.
+1. Unzip.
+2. Upload `index.html`, `.nojekyll`, `README.md`.
 3. Commit changes.
-4. After deployment, press Ctrl + F5 in the browser.
+4. Press Ctrl + F5 after deployment.

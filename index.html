@@ -4,7 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>UAE CRM Secure v2</title>
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2">
+/* compatibility stubs for removed language-switch versions */
+function crmApplyLanguageSafe(){ return true; }
+function applyCrmLanguage(){ return true; }
+function applyLangSimple(){ return true; }
+function applyLangSafe(){ return true; }
+function applyLang(){ return true; }
+
+</script>
 <style>
 :root{--bg:#f6f8fb;--line:#dbe3ef;--dark:#111827;--muted:#64748b;--red:#b91c1c}*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Segoe UI,Arial,sans-serif;color:#111827}.wrap{max-width:1320px;margin:auto;padding:24px}.card{background:white;border:1px solid var(--line);border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 1px 4px #0001}h1{font-size:32px;margin:8px 0}h2{font-size:18px;margin:0 0 12px}.muted{color:var(--muted)}.small{font-size:12px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}.top{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}.actions,.tabs{display:flex;gap:8px;flex-wrap:wrap}.btn,.tab,button{border:0;border-radius:12px;padding:10px 13px;font-weight:700;cursor:pointer;background:#111827;color:white}.secondary,.tab{background:white;color:#334155;border:1px solid var(--line)}.danger{background:white;color:var(--red);border:1px solid #fecaca}.tab.active{background:#111827;color:white}.toolbar{display:grid;grid-template-columns:1fr auto auto auto auto;gap:10px;margin:16px 0}input,select,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;background:white;font:inherit;margin:4px 0 10px}textarea{min-height:80px}.section{display:none}.section.active{display:block}.hidden{display:none!important}.badge{display:inline-block;border-radius:999px;padding:4px 8px;background:#e2e8f0;font-size:12px;font-weight:700}.green{background:#d1fae5;color:#065f46}.amber{background:#fef3c7;color:#92400e}.red{background:#fee2e2;color:#991b1b}.blue{background:#dbeafe;color:#1e40af}.metric .value{font-size:26px;font-weight:800}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:14px;background:white}table{border-collapse:collapse;width:100%;min-width:1000px}th,td{padding:9px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;vertical-align:top}th{background:#f1f5f9}.modal{position:fixed;inset:0;background:#0f172a77;display:none;align-items:center;justify-content:center;padding:18px}.modal.show{display:flex}.modalbox{background:white;border-radius:20px;max-width:900px;width:100%;max-height:90vh;overflow:auto}.modalhead{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:14px}.modalbody{padding:16px}.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.full{grid-column:1/-1}.notice{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:12px;padding:12px;margin:12px 0}pre{background:#111827;color:#e5e7eb;padding:12px;border-radius:10px;overflow:auto}@media(max-width:900px){.grid2,.grid3,.grid5,.toolbar,.formgrid{grid-template-columns:1fr}.wrap{padding:14px}}
 </style>
@@ -15,7 +23,7 @@
   <div id="auth"></div>
   <div id="app" class="hidden">
     <div class="top card">
-      <div><h1>UAE Sales Activity Control</h1><p class="muted">Secure CRM napojené na Supabase · v2</p><p id="who" class="small muted"></p></div>
+      <div><h1>UAE Sales Activity Control</h1><p class="muted">Secure CRM connected to Supabase · v2</p><p id="who" class="small muted"></p></div>
       <div class="actions"><button class="secondary adminOnly" onclick="exportCSV('companies')">Export companies</button><button class="secondary adminOnly" onclick="exportCSV('deals')">Export deals</button><button class="secondary" onclick="loadAll()">Refresh</button><button class="danger" onclick="logout()">Logout</button></div>
     </div>
     <div id="pending" class="notice hidden"></div>
@@ -51,7 +59,7 @@ function contact(id){return data.contacts.find(x=>x.id===id)||{}}
 function deal(id){return data.deals.find(x=>x.id===id)||{}}
 function qmatch(o){let q=document.getElementById('q')?.value.toLowerCase()||'';return JSON.stringify(o).toLowerCase().includes(q)}
 function showFatal(t,m){let b=document.getElementById('fatal');if(b){b.classList.remove('hidden');b.innerHTML='<h2>'+esc(t)+'</h2><pre>'+esc(m)+'</pre>'}}
-async function init(){const res=await sb.auth.getSession();session=res.data.session;if(!session){renderAuth();return}const pr=await sb.from('profiles').select('*').eq('id',session.user.id).single();if(pr.error){showFatal('Profil se nepodařilo načíst',pr.error.message);return}profile=pr.data;renderShell(); setTimeout(crmApplyLanguageSafe,0);if(isApproved())await loadAll();else renderAll()}
+async function init(){const res=await sb.auth.getSession();session=res.data.session;if(!session){renderAuth();return}const pr=await sb.from('profiles').select('*').eq('id',session.user.id).single();if(pr.error){showFatal('Profil se nepodařilo načíst',pr.error.message);return}profile=pr.data;renderShell(); if(isApproved())await loadAll();else renderAll()}
 function renderAuth(){app.classList.add('hidden');auth.innerHTML='<div class="grid2"><div class="card"><h1>Secure UAE CRM</h1><p class="muted">Signed iní do zabezpečeného CRM.</p><pre>URL = '+esc(SUPABASE_URL)+'\nSupabase OK</pre></div><div class="card"><h2>Signed iní</h2><label>E-mail<input id="loginEmail"></label><label>Heslo<input id="loginPassword" type="password"></label><button onclick="login()">Přihlásit</button><hr><h2>Registrace</h2><label>Name<input id="regName"></label><label>E-mail<input id="regEmail"></label><label>Heslo<input id="regPassword" type="password"></label><button class="secondary" onclick="register()">Registrovat</button><p id="msg" class="small muted"></p></div></div>'}
 function msg(x){document.getElementById('msg').textContent=x}
 async function login(){let r=await sb.auth.signInWithPassword({email:loginEmail.value.trim(),password:loginPassword.value});if(r.error){msg(r.error.message);return}location.reload()}
@@ -143,7 +151,7 @@ var crmCurrentLang = localStorage.getItem("uae-crm-lang") || "cs";
 function setLangSimple(lang) {
   crmCurrentLang = lang;
   localStorage.setItem("uae-crm-lang", lang);
-  applyLangSimple();
+  
 }
 
 function applyLangSimple() {
@@ -194,7 +202,7 @@ function replaceButtonText(from, to) {
 }
 
 /* compatibility: if older code calls applyLang/setLang */
-function applyLang() { applyLangSimple(); }
+function applyLang() {  }
 function setLang(lang) { setLangSimple(lang); }
 
 
@@ -231,8 +239,8 @@ const observerEnglishUI = new MutationObserver(()=>setTimeout(normalizeEnglishUI
 observerEnglishUI.observe(document.body,{childList:true,subtree:true});
 
 init();
-setTimeout(crmApplyLanguageSafe, 0);
-setTimeout(applyLangSimple, 0);
+
+
 </script>
 </body>
 </html>
