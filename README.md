@@ -1,14 +1,16 @@
-# UAE CRM Secure v8
+# UAE CRM Secure – English version
 
-Opravy:
-- bezpečný přepínač CZ / EN bez zásahu do generování záložek,
-- vysvětlen účel vyhledávacího řádku,
-- zachováno filtrování kontaktů podle vybrané firmy při zakládání dealu.
+Complete English-only version of the Supabase CRM.
 
-Vyhledávací řádek je globální filtr CRM záznamů – filtruje firmy, kontakty, obchodníky, dealy a CORE čísla.
+Changes:
+- removed CZ/EN language switch to avoid instability,
+- all main UI elements are normalized to English,
+- search field is explained as a global CRM filter,
+- deal contact selection remains filtered by selected company,
+- Supabase connection and role-based permissions are preserved.
 
-Nasazení:
-1. ZIP rozbalte.
-2. Nahrajte `index.html`, `.nojekyll`, `README.md`.
+Deployment:
+1. Unzip the package.
+2. Upload `index.html`, `.nojekyll`, and `README.md` to the GitHub repository.
 3. Commit changes.
-4. Po deployi proveďte Ctrl + F5.
+4. After deployment, press Ctrl + F5 in the browser.

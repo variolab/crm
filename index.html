@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="cs">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -15,21 +15,17 @@
   <div id="auth"></div>
   <div id="app" class="hidden">
     <div class="top card">
-      <div><h1>Kontrola obchodních aktivit v SAE</h1><p class="muted">Secure CRM napojené na Supabase · v2</p><p id="who" class="small muted"></p></div>
-      <div class="actions"><button class="secondary adminOnly" onclick="exportCSV('companies')">Export firem</button><button class="secondary adminOnly" onclick="exportCSV('deals')">Export dealů</button><button class="secondary" onclick="loadAll()">Refresh</button><button class="danger" onclick="logout()">Odhlásit</button></div>
+      <div><h1>UAE Sales Activity Control</h1><p class="muted">Secure CRM napojené na Supabase · v2</p><p id="who" class="small muted"></p></div>
+      <div class="actions"><button class="secondary adminOnly" onclick="exportCSV('companies')">Export companies</button><button class="secondary adminOnly" onclick="exportCSV('deals')">Export deals</button><button class="secondary" onclick="loadAll()">Refresh</button><button class="danger" onclick="logout()">Logout</button></div>
     </div>
     <div id="pending" class="notice hidden"></div>
-  <div id="languageStrip" class="actions" style="margin:14px 0;">
-    <button id="langCsTop" class="btn secondary" onclick="crmSetLanguageSafe('cs')">CZ</button>
-    <button id="langEnTop" class="btn secondary" onclick="crmSetLanguageSafe('en')">EN</button>
-    <span id="searchHint" class="pill">Vyhledávání níže filtruje záznamy v CRM</span>
-  </div>
-    <div id="tabs" class="tabs"></div>
-    <div class="toolbar"><input id="q" placeholder="Hledat..." oninput="renderAll()"><button class="secondary adminOnly" onclick="openSalesRep()">+ Obchodník</button><button class="secondary" onclick="openCompany()">+ Firma</button><button class="secondary" onclick="openContact()">+ Kontakt</button><button onclick="openDeal()">+ Deal</button></div>
+    <div id="searchHint" class="pill" style="margin:14px 0;display:inline-block;">The search field below is a global CRM filter.</div>
+  <div id="tabs" class="tabs"></div>
+    <div class="toolbar"><input id="q" placeholder="Search – filters companies, contacts, deals, sales reps and CORE numbers" oninput="renderAll()"><button class="secondary adminOnly" onclick="openSalesRep()">+ Sales rep</button><button class="secondary" onclick="openCompany()">+ Company</button><button class="secondary" onclick="openContact()">+ Contact</button><button onclick="openDeal()">+ Deal</button></div>
     <section id="dashboard" class="section"></section><section id="users" class="section"></section><section id="salesreps" class="section"></section><section id="companies" class="section"></section><section id="contacts" class="section"></section><section id="deals" class="section"></section><section id="activities" class="section"></section><section id="process" class="section"></section>
   </div>
 </div>
-<div id="modal" class="modal"><div class="modalbox"><div class="modalhead"><h2 id="modalTitle"></h2><button class="secondary" onclick="closeModal()">Zavřít</button></div><div id="modalBody" class="modalbody"></div></div></div>
+<div id="modal" class="modal"><div class="modalbox"><div class="modalhead"><h2 id="modalTitle"></h2><button class="secondary" onclick="closeModal()">Close</button></div><div id="modalBody" class="modalbody"></div></div></div>
 <script>
 window.addEventListener('error',e=>showFatal('Chyba aplikace',String(e.message)+'\nline: '+String(e.lineno)));
 const SUPABASE_URL='https://ibocarzxamcqycuctixc.supabase.co';
@@ -56,26 +52,26 @@ function deal(id){return data.deals.find(x=>x.id===id)||{}}
 function qmatch(o){let q=document.getElementById('q')?.value.toLowerCase()||'';return JSON.stringify(o).toLowerCase().includes(q)}
 function showFatal(t,m){let b=document.getElementById('fatal');if(b){b.classList.remove('hidden');b.innerHTML='<h2>'+esc(t)+'</h2><pre>'+esc(m)+'</pre>'}}
 async function init(){const res=await sb.auth.getSession();session=res.data.session;if(!session){renderAuth();return}const pr=await sb.from('profiles').select('*').eq('id',session.user.id).single();if(pr.error){showFatal('Profil se nepodařilo načíst',pr.error.message);return}profile=pr.data;renderShell(); setTimeout(crmApplyLanguageSafe,0);if(isApproved())await loadAll();else renderAll()}
-function renderAuth(){app.classList.add('hidden');auth.innerHTML='<div class="grid2"><div class="card"><h1>Secure UAE CRM</h1><p class="muted">Přihlášení do zabezpečeného CRM.</p><pre>URL = '+esc(SUPABASE_URL)+'\nSupabase OK</pre></div><div class="card"><h2>Přihlášení</h2><label>E-mail<input id="loginEmail"></label><label>Heslo<input id="loginPassword" type="password"></label><button onclick="login()">Přihlásit</button><hr><h2>Registrace</h2><label>Jméno<input id="regName"></label><label>E-mail<input id="regEmail"></label><label>Heslo<input id="regPassword" type="password"></label><button class="secondary" onclick="register()">Registrovat</button><p id="msg" class="small muted"></p></div></div>'}
+function renderAuth(){app.classList.add('hidden');auth.innerHTML='<div class="grid2"><div class="card"><h1>Secure UAE CRM</h1><p class="muted">Signed iní do zabezpečeného CRM.</p><pre>URL = '+esc(SUPABASE_URL)+'\nSupabase OK</pre></div><div class="card"><h2>Signed iní</h2><label>E-mail<input id="loginEmail"></label><label>Heslo<input id="loginPassword" type="password"></label><button onclick="login()">Přihlásit</button><hr><h2>Registrace</h2><label>Name<input id="regName"></label><label>E-mail<input id="regEmail"></label><label>Heslo<input id="regPassword" type="password"></label><button class="secondary" onclick="register()">Registrovat</button><p id="msg" class="small muted"></p></div></div>'}
 function msg(x){document.getElementById('msg').textContent=x}
 async function login(){let r=await sb.auth.signInWithPassword({email:loginEmail.value.trim(),password:loginPassword.value});if(r.error){msg(r.error.message);return}location.reload()}
 async function register(){let r=await sb.auth.signUp({email:regEmail.value.trim(),password:regPassword.value,options:{data:{full_name:regName.value.trim()}}});if(r.error){msg(r.error.message);return}msg('Registrace proběhla. Účet čeká na schválení.')}
 async function logout(){await sb.auth.signOut();location.reload()}
-function renderShell(){auth.innerHTML='';app.classList.remove('hidden');who.innerHTML='Přihlášen: <b>'+esc(profile.email)+'</b> · role: <b>'+esc(profile.role)+'</b> · status: <b>'+esc(profile.status)+'</b>';document.querySelectorAll('.adminOnly').forEach(e=>e.classList.toggle('hidden',!isAdmin()));if(!isApproved()){pending.classList.remove('hidden');pending.textContent='Váš účet čeká na schválení nebo není aktivní.'}}
+function renderShell(){auth.innerHTML='';app.classList.remove('hidden');who.innerHTML='Signed in: <b>'+esc(profile.email)+'</b> · role: <b>'+esc(profile.role)+'</b> · status: <b>'+esc(profile.status)+'</b>';document.querySelectorAll('.adminOnly').forEach(e=>e.classList.toggle('hidden',!isAdmin()));if(!isApproved()){pending.classList.remove('hidden');pending.textContent='Your account is waiting for approval or is not active.'}}
 async function loadAll(){const tables=isAdmin()?['profiles','sales_representatives','companies','contacts','deals','activities']:['sales_representatives','companies','contacts','deals','activities'];for(const t of tables){let r=await sb.from(t).select('*');if(r.error){showFatal('Chyba načtení '+t,r.error.message);return}data[t]=r.data||[]}renderShell();renderAll()}
-function renderTabs(){const keys=isAdmin()?['dashboard','users','salesreps','companies','contacts','deals','activities','process']:['dashboard','salesreps','companies','contacts','deals','activities','process'];const names={dashboard:'Dashboard',users:'Uživatelé',salesreps:'Obchodníci',companies:'Firmy',contacts:'Kontakty',deals:'Dealy / nabídky',activities:'Aktivity',process:'Procesní kontrola'};tabs.innerHTML=keys.map(k=>'<button class="tab '+(tab===k?'active':'')+'" onclick="setTab(\''+k+'\')">'+names[k]+'</button>').join('')}
+function renderTabs(){const keys=isAdmin()?['dashboard','users','salesreps','companies','contacts','deals','activities','process']:['dashboard','salesreps','companies','contacts','deals','activities','process'];const names={dashboard:'Dashboard',users:'Users',salesreps:'Sales reps',companies:'Companies',contacts:'Contacts',deals:'Deals / Offers',activities:'Activities',process:'Process control'};tabs.innerHTML=keys.map(k=>'<button class="tab '+(tab===k?'active':'')+'" onclick="setTab(\''+k+'\')">'+names[k]+'</button>').join('')}
 function setTab(k){tab=k;renderAll()}
-function renderAll(){renderTabs();document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));if(!document.getElementById(tab))tab='dashboard';document.getElementById(tab).classList.add('active');document.querySelectorAll('.adminOnly').forEach(e=>e.classList.toggle('hidden',!isAdmin()));if(!isApproved()){dashboard.innerHTML='<div class="notice">Váš účet čeká na schválení nebo není aktivní.</div>';return}renderDashboard();renderUsers();renderSalesReps();renderCompanies();renderContacts();renderDeals();renderActivities();renderProcess()}
+function renderAll(){renderTabs();document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));if(!document.getElementById(tab))tab='dashboard';document.getElementById(tab).classList.add('active');document.querySelectorAll('.adminOnly').forEach(e=>e.classList.toggle('hidden',!isAdmin()));if(!isApproved()){dashboard.innerHTML='<div class="notice">Your account is waiting for approval or is not active.</div>';return}renderDashboard();renderUsers();renderSalesReps();renderCompanies();renderContacts();renderDeals();renderActivities();renderProcess()}
 function repStats(id){let open=data.deals.filter(d=>d.sales_rep_id===id&&!['Won','Lost'].includes(d.stage));let acts=data.activities.filter(a=>a.sales_rep_id===id);return{companies:data.companies.filter(c=>c.sales_rep_id===id).length,pipeline:open.reduce((s,d)=>s+Number(d.value||0),0),activities:acts.length}}
-function renderDashboard(){let open=data.deals.filter(d=>!['Won','Lost'].includes(d.stage));let pipe=open.reduce((s,d)=>s+Number(d.value||0),0);let weighted=open.reduce((s,d)=>s+Number(d.value||0)*Number(d.probability||0)/100,0);let stale=data.deals.filter(d=>!['Won','Lost'].includes(d.stage)&&ageDays(d.last_activity_date)>7);dashboard.innerHTML='<div class="grid5"><div class="card metric"><div class="label">Obchodníci</div><div class="value">'+data.sales_representatives.filter(r=>r.active).length+'</div></div><div class="card metric"><div class="label">Firmy</div><div class="value">'+data.companies.length+'</div></div><div class="card metric"><div class="label">Open pipeline</div><div class="value">'+fmt(pipe)+'</div></div><div class="card metric"><div class="label">Weighted</div><div class="value">'+fmt(weighted)+'</div></div><div class="card metric"><div class="label">Bez update > 7 dní</div><div class="value">'+stale.length+'</div></div></div>'}
-function renderUsers(){if(!isAdmin())return;let rows=data.profiles.filter(qmatch);users.innerHTML='<div class="card"><h2>Správa uživatelů</h2><div class="tablewrap"><table><tr><th>Email</th><th>Jméno</th><th>Role</th><th>Status</th><th></th></tr>'+rows.map(u=>'<tr><td><b>'+esc(u.email)+'</b></td><td>'+esc(u.full_name)+'</td><td>'+esc(u.role)+'</td><td>'+badge(u.status,u.status==='approved'?'green':u.status==='pending'?'amber':'red')+'</td><td>'+(u.status!=='approved'?'<button class="btn small" onclick="approveUser(\''+u.id+'\',\'sales_user\')">Approve sales</button> ':'')+(profile.role==='owner'?'<button class="btn secondary small" onclick="approveUser(\''+u.id+'\',\'user_admin\')">Make admin</button> ':'')+'<button class="btn danger small" onclick="disableUser(\''+u.id+'\')">Disable</button></td></tr>').join('')+'</table></div></div>'}
+function renderDashboard(){let open=data.deals.filter(d=>!['Won','Lost'].includes(d.stage));let pipe=open.reduce((s,d)=>s+Number(d.value||0),0);let weighted=open.reduce((s,d)=>s+Number(d.value||0)*Number(d.probability||0)/100,0);let stale=data.deals.filter(d=>!['Won','Lost'].includes(d.stage)&&ageDays(d.last_activity_date)>7);dashboard.innerHTML='<div class="grid5"><div class="card metric"><div class="label">Sales reps</div><div class="value">'+data.sales_representatives.filter(r=>r.active).length+'</div></div><div class="card metric"><div class="label">Companies</div><div class="value">'+data.companies.length+'</div></div><div class="card metric"><div class="label">Open pipeline</div><div class="value">'+fmt(pipe)+'</div></div><div class="card metric"><div class="label">Weighted</div><div class="value">'+fmt(weighted)+'</div></div><div class="card metric"><div class="label">No update > 7 days</div><div class="value">'+stale.length+'</div></div></div>'}
+function renderUsers(){if(!isAdmin())return;let rows=data.profiles.filter(qmatch);users.innerHTML='<div class="card"><h2>Správa uživatelů</h2><div class="tablewrap"><table><tr><th>Email</th><th>Name</th><th>Role</th><th>Status</th><th></th></tr>'+rows.map(u=>'<tr><td><b>'+esc(u.email)+'</b></td><td>'+esc(u.full_name)+'</td><td>'+esc(u.role)+'</td><td>'+badge(u.status,u.status==='approved'?'green':u.status==='pending'?'amber':'red')+'</td><td>'+(u.status!=='approved'?'<button class="btn small" onclick="approveUser(\''+u.id+'\',\'sales_user\')">Approve sales</button> ':'')+(profile.role==='owner'?'<button class="btn secondary small" onclick="approveUser(\''+u.id+'\',\'user_admin\')">Make admin</button> ':'')+'<button class="btn danger small" onclick="disableUser(\''+u.id+'\')">Disable</button></td></tr>').join('')+'</table></div></div>'}
 async function approveUser(id,role){let r=await sb.rpc('approve_user',{target_user_id:id,new_role:role});if(r.error){alert(r.error.message);return}await loadAll()}
 async function disableUser(id){let r=await sb.rpc('disable_user',{target_user_id:id});if(r.error){alert(r.error.message);return}await loadAll()}
-function renderSalesReps(){let rows=data.sales_representatives.filter(qmatch);salesreps.innerHTML='<div style="margin-bottom:12px" class="adminOnly"><button class="btn" onclick="openSalesRep()">+ Nový obchodník</button></div><div class="grid3">'+rows.map(r=>{let s=repStats(r.id);return '<div class="card"><h2>'+esc(r.name)+'</h2><p class="muted">'+esc(r.company||'')+' · '+esc(r.role_title||'')+' · '+esc(r.territory||'')+'</p><p class="small"><b>E-mail:</b> '+esc(r.email||'—')+'<br><b>Phone:</b> '+esc(r.phone||'—')+'</p><div class="kpis">'+badge('Companies: '+s.companies,'blue')+badge('Pipeline: '+fmt(s.pipeline),'green')+badge('Activities: '+s.activities)+'</div>'+(canEdit(r)?'<button class="btn secondary small" onclick="openSalesRep(\''+r.id+'\')">Edit</button>':'')+'</div>'}).join('')+'</div>'}
+function renderSalesReps(){let rows=data.sales_representatives.filter(qmatch);salesreps.innerHTML='<div style="margin-bottom:12px" class="adminOnly"><button class="btn" onclick="openSalesRep()">+ New sales rep</button></div><div class="grid3">'+rows.map(r=>{let s=repStats(r.id);return '<div class="card"><h2>'+esc(r.name)+'</h2><p class="muted">'+esc(r.company||'')+' · '+esc(r.role_title||'')+' · '+esc(r.territory||'')+'</p><p class="small"><b>E-mail:</b> '+esc(r.email||'—')+'<br><b>Phone:</b> '+esc(r.phone||'—')+'</p><div class="kpis">'+badge('Companies: '+s.companies,'blue')+badge('Pipeline: '+fmt(s.pipeline),'green')+badge('Activities: '+s.activities)+'</div>'+(canEdit(r)?'<button class="btn secondary small" onclick="openSalesRep(\''+r.id+'\')">Edit</button>':'')+'</div>'}).join('')+'</div>'}
 function renderCompanies(){let rows=data.companies.filter(c=>qmatch({...c,salesRep:rep(c.sales_rep_id).name}));companies.innerHTML='<div class="grid2">'+rows.map(c=>'<div class="card"><h2>'+esc(c.company)+'</h2><p class="muted">'+esc(c.segment||'')+' · '+esc(c.emirate||'')+' · '+badge(c.status||'')+'</p><p><b>Sales rep:</b> '+esc(rep(c.sales_rep_id).name||'—')+'<br><b>Next:</b> '+esc(c.next_step||'')+'</p>'+(canEdit(c)?'<button class="btn secondary small" onclick="openCompany(\''+c.id+'\')">Edit</button>':'')+'</div>').join('')+'</div>'}
-function renderContacts(){let rows=data.contacts.filter(c=>qmatch({...c,company:company(c.company_id).company}));contacts.innerHTML='<div class="tablewrap"><table><tr><th>Firma</th><th>Jméno</th><th>Pozice</th><th>E-mail</th><th>Telefon</th><th></th></tr>'+rows.map(c=>'<tr><td>'+esc(company(c.company_id).company)+'</td><td><b>'+esc(c.name)+'</b></td><td>'+esc(c.position||'')+'</td><td>'+esc(c.email||'')+'</td><td>'+esc(c.phone||'')+'</td><td>'+(canEdit(c)?'<button class="btn secondary small" onclick="openContact(\''+c.id+'\')">Edit</button>':'')+'</td></tr>').join('')+'</table></div>'}
-function renderDeals(){let rows=data.deals.filter(d=>qmatch({...d,company:company(d.company_id).company,contact:contact(d.contact_id).name,salesRep:rep(d.sales_rep_id).name}));deals.innerHTML='<div class="tablewrap"><table><tr><th>Firma</th><th>Obchodník</th><th>Kontakt</th><th>Deal</th><th>Produkt</th><th>Stage</th><th>Hodnota</th><th></th></tr>'+rows.map(d=>'<tr><td><b>'+esc(company(d.company_id).company)+'</b></td><td>'+esc(rep(d.sales_rep_id).name||'')+'</td><td>'+esc(contact(d.contact_id).name||'')+'</td><td>'+esc(d.title)+'</td><td>'+esc(d.product||'')+'</td><td>'+badge(d.stage,d.stage==='Won'?'green':d.stage==='Lost'?'red':'blue')+'</td><td>'+fmt(d.value,d.currency)+'</td><td>'+(canEdit(d)?'<button class="btn secondary small" onclick="openDeal(\''+d.id+'\')">Edit</button>':'')+'</td></tr>').join('')+'</table></div>'}
-function renderActivities(){let rows=data.activities.filter(a=>qmatch({...a,company:company(a.company_id).company}));activities.innerHTML='<div style="margin-bottom:12px"><button class="btn" onclick="openActivity()">+ Nová aktivita</button></div><div class="grid3">'+rows.map(a=>'<div class="card"><h2>'+esc(a.subject)+'</h2><p class="muted">'+esc(company(a.company_id).company)+'</p><p><b>Date:</b> '+esc(a.date||'')+'</p>'+(canEdit(a)?'<button class="btn secondary small" onclick="openActivity(\''+a.id+'\')">Edit</button>':'')+'</div>').join('')+'</div>'}
+function renderContacts(){let rows=data.contacts.filter(c=>qmatch({...c,company:company(c.company_id).company}));contacts.innerHTML='<div class="tablewrap"><table><tr><th>Company</th><th>Name</th><th>Position</th><th>E-mail</th><th>Phone</th><th></th></tr>'+rows.map(c=>'<tr><td>'+esc(company(c.company_id).company)+'</td><td><b>'+esc(c.name)+'</b></td><td>'+esc(c.position||'')+'</td><td>'+esc(c.email||'')+'</td><td>'+esc(c.phone||'')+'</td><td>'+(canEdit(c)?'<button class="btn secondary small" onclick="openContact(\''+c.id+'\')">Edit</button>':'')+'</td></tr>').join('')+'</table></div>'}
+function renderDeals(){let rows=data.deals.filter(d=>qmatch({...d,company:company(d.company_id).company,contact:contact(d.contact_id).name,salesRep:rep(d.sales_rep_id).name}));deals.innerHTML='<div class="tablewrap"><table><tr><th>Company</th><th>Sales rep</th><th>Contact</th><th>Deal</th><th>Product</th><th>Stage</th><th>Value</th><th></th></tr>'+rows.map(d=>'<tr><td><b>'+esc(company(d.company_id).company)+'</b></td><td>'+esc(rep(d.sales_rep_id).name||'')+'</td><td>'+esc(contact(d.contact_id).name||'')+'</td><td>'+esc(d.title)+'</td><td>'+esc(d.product||'')+'</td><td>'+badge(d.stage,d.stage==='Won'?'green':d.stage==='Lost'?'red':'blue')+'</td><td>'+fmt(d.value,d.currency)+'</td><td>'+(canEdit(d)?'<button class="btn secondary small" onclick="openDeal(\''+d.id+'\')">Edit</button>':'')+'</td></tr>').join('')+'</table></div>'}
+function renderActivities(){let rows=data.activities.filter(a=>qmatch({...a,company:company(a.company_id).company}));activities.innerHTML='<div style="margin-bottom:12px"><button class="btn" onclick="openActivity()">+ New activity</button></div><div class="grid3">'+rows.map(a=>'<div class="card"><h2>'+esc(a.subject)+'</h2><p class="muted">'+esc(company(a.company_id).company)+'</p><p><b>Date:</b> '+esc(a.date||'')+'</p>'+(canEdit(a)?'<button class="btn secondary small" onclick="openActivity(\''+a.id+'\')">Edit</button>':'')+'</div>').join('')+'</div>'}
 function renderProcess(){let issues=data.deals.filter(d=>!d.crm_complete||!d.core_complete||!d.paper_folder||!d.core_number||!d.offer_no);process.innerHTML='<div class="grid3"><div class="card metric"><div class="label">Process issues</div><div class="value">'+issues.length+'</div></div><div class="card metric"><div class="label">Pending users</div><div class="value">'+data.profiles.filter(p=>p.status==='pending').length+'</div></div></div>'}
 function opts(arr,sel){return arr.map(x=>'<option value="'+esc(x)+'" '+(x===sel?'selected':'')+'>'+esc(x)+'</option>').join('')}
 function repOpts(sel){return data.sales_representatives.map(r=>'<option value="'+esc(r.id)+'" '+(r.id===sel?'selected':'')+'>'+esc(r.name)+'</option>').join('')}
@@ -86,7 +82,7 @@ function modal(t,h){modalTitle.textContent=t;modalBody.innerHTML=h;document.getE
 function closeModal(){document.getElementById('modal').classList.remove('show')}
 function form(id){return Object.fromEntries(new FormData(document.getElementById(id)).entries())}
 function checked(n){return document.querySelector('[name="'+n+'"]')?.checked||false}
-function openSalesRep(id=''){if(!isAdmin())return alert('Pouze admin.');let r=id?data.sales_representatives.find(x=>x.id===id):{name:'',company:'EXSRTEL',role_title:'Sales representative',email:'',phone:'',territory:'Dubai',active:true};modal(id?'Edit sales representative':'New sales representative','<form id="fRep" class="formgrid"><label>Name<input name="name" value="'+esc(r.name)+'"></label><label>Company<input name="company" value="'+esc(r.company||'')+'"></label><label>Role<input name="role_title" value="'+esc(r.role_title||'')+'"></label><label>Territory<input name="territory" value="'+esc(r.territory||'')+'"></label><label>Email<input name="email" value="'+esc(r.email||'')+'"></label><label>Phone<input name="phone" value="'+esc(r.phone||'')+'"></label><div class="full"><button type="button" class="btn" onclick="saveRep(\''+id+'\')">Save</button></div></form>')}
+function openSalesRep(id=''){if(!isAdmin())return alert('Admin only.');let r=id?data.sales_representatives.find(x=>x.id===id):{name:'',company:'EXSRTEL',role_title:'Sales representative',email:'',phone:'',territory:'Dubai',active:true};modal(id?'Edit sales representative':'New sales representative','<form id="fRep" class="formgrid"><label>Name<input name="name" value="'+esc(r.name)+'"></label><label>Company<input name="company" value="'+esc(r.company||'')+'"></label><label>Role<input name="role_title" value="'+esc(r.role_title||'')+'"></label><label>Territory<input name="territory" value="'+esc(r.territory||'')+'"></label><label>Email<input name="email" value="'+esc(r.email||'')+'"></label><label>Phone<input name="phone" value="'+esc(r.phone||'')+'"></label><div class="full"><button type="button" class="btn" onclick="saveRep(\''+id+'\')">Save</button></div></form>')}
 async function saveRep(id){await upsert('sales_representatives',id,form('fRep'))}
 function openCompany(id=''){let c=id?data.companies.find(x=>x.id===id):{company:'',segment:'University',emirate:'Dubai',status:'New lead',sales_rep_id:data.sales_representatives[0]?.id||'',next_step:''};modal(id?'Edit company':'New company','<form id="fCompany" class="formgrid"><label>Company<input name="company" value="'+esc(c.company)+'"></label><label>Sales rep<select name="sales_rep_id">'+repOpts(c.sales_rep_id)+'</select></label><label>Segment<select name="segment">'+opts(segments,c.segment)+'</select></label><label>Emirate<select name="emirate">'+opts(emirates,c.emirate)+'</select></label><label>Status<input name="status" value="'+esc(c.status||'')+'"></label><label>Next<input name="next_step" value="'+esc(c.next_step||'')+'"></label><div class="full"><button type="button" class="btn" onclick="saveCompany(\''+id+'\')">Save</button></div></form>')}
 async function saveCompany(id){await upsert('companies',id,form('fCompany'))}
@@ -98,12 +94,12 @@ function openActivity(id=''){let a=id?data.activities.find(x=>x.id===id):{compan
 async function saveActivity(id){let f=form('fAct');if(!f.deal_id)delete f.deal_id;await upsert('activities',id,f)}
 async function upsert(table,id,payload){payload.updated_by=profile.id;let r=id?await sb.from(table).update(payload).eq('id',id):await sb.from(table).insert(payload);if(r.error){alert(r.error.message);return}closeModal();await loadAll()}
 function exportCSV(table){if(!isAdmin())return;let rows=data[table]||[];downloadCSV('uae-crm-'+table+'.csv',rows)}
-function downloadCSV(filename,rows){if(!rows.length)return alert('Žádná data');let heads=[...new Set(rows.flatMap(r=>Object.keys(r)))],escCsv=v=>'"'+String(v??'').replaceAll('"','""')+'"',csv='\ufeff'+[heads.join(';'),...rows.map(r=>heads.map(h=>escCsv(r[h])).join(';'))].join('\n'),blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url)}
+function downloadCSV(filename,rows){if(!rows.length)return alert('No data');let heads=[...new Set(rows.flatMap(r=>Object.keys(r)))],escCsv=v=>'"'+String(v??'').replaceAll('"','""')+'"',csv='\ufeff'+[heads.join(';'),...rows.map(r=>heads.map(h=>escCsv(r[h])).join(';'))].join('\n'),blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url)}
 
 const I18N = {
   cs: {
-    title: "Kontrola obchodních aktivit v SAE",
-    lead: "Online CRM napojené na Supabase. Přihlášení, registrace, schvalování uživatelů a role owner / user_admin / sales_user.",
+    title: "UAE Sales Activity Control",
+    lead: "Online CRM connected to Supabase. Login, registration, user approval and owner / user_admin / sales_user roles.",
     search: "Hledat firmu, obchodníka, kontakt, deal, CORE číslo..."
   },
   en: {
@@ -154,34 +150,34 @@ function applyLangSimple() {
   var isEn = crmCurrentLang === "en";
 
   var title = document.querySelector("h1");
-  if (title) title.textContent = isEn ? "UAE Sales Activity Control" : "Kontrola obchodních aktivit v SAE";
+  if (title) title.textContent = isEn ? "UAE Sales Activity Control" : "UAE Sales Activity Control";
 
   var lead = document.querySelector(".lead");
   if (lead) {
     lead.textContent = isEn
       ? "Online CRM connected to Supabase. Login, registration, user approval and owner / user_admin / sales_user roles."
-      : "Online CRM napojené na Supabase. Přihlášení, registrace, schvalování uživatelů a role owner / user_admin / sales_user.";
+      : "Online CRM connected to Supabase. Login, registration, user approval and owner / user_admin / sales_user roles.";
   }
 
   var q = document.getElementById("q");
   if (q) q.placeholder = isEn ? "Search company, sales rep, contact, deal, CORE number..." : "Hledat firmu, obchodníka, kontakt, deal, CORE číslo...";
 
-  replaceButtonText("Odhlásit", isEn ? "Logout" : "Odhlásit");
-  replaceButtonText("Logout", isEn ? "Logout" : "Odhlásit");
-  replaceButtonText("Export obchodníků", isEn ? "Export sales reps" : "Export obchodníků");
-  replaceButtonText("Export sales reps", isEn ? "Export sales reps" : "Export obchodníků");
-  replaceButtonText("Export firem", isEn ? "Export companies" : "Export firem");
-  replaceButtonText("Export companies", isEn ? "Export companies" : "Export firem");
-  replaceButtonText("Export dealů", isEn ? "Export deals" : "Export dealů");
-  replaceButtonText("Export deals", isEn ? "Export deals" : "Export dealů");
-  replaceButtonText("+ Nový obchodník", isEn ? "+ New sales rep" : "+ Nový obchodník");
-  replaceButtonText("+ New sales rep", isEn ? "+ New sales rep" : "+ Nový obchodník");
-  replaceButtonText("+ Nová firma", isEn ? "+ New company" : "+ Nová firma");
-  replaceButtonText("+ New company", isEn ? "+ New company" : "+ Nová firma");
-  replaceButtonText("+ Nový kontakt", isEn ? "+ New contact" : "+ Nový kontakt");
-  replaceButtonText("+ New contact", isEn ? "+ New contact" : "+ Nový kontakt");
-  replaceButtonText("+ Nový deal", isEn ? "+ New deal" : "+ Nový deal");
-  replaceButtonText("+ New deal", isEn ? "+ New deal" : "+ Nový deal");
+  replaceButtonText("Logout", isEn ? "Logout" : "Logout");
+  replaceButtonText("Logout", isEn ? "Logout" : "Logout");
+  replaceButtonText("Export sales reps", isEn ? "Export sales reps" : "Export sales reps");
+  replaceButtonText("Export sales reps", isEn ? "Export sales reps" : "Export sales reps");
+  replaceButtonText("Export companies", isEn ? "Export companies" : "Export companies");
+  replaceButtonText("Export companies", isEn ? "Export companies" : "Export companies");
+  replaceButtonText("Export deals", isEn ? "Export deals" : "Export deals");
+  replaceButtonText("Export deals", isEn ? "Export deals" : "Export deals");
+  replaceButtonText("+ New sales rep", isEn ? "+ New sales rep" : "+ New sales rep");
+  replaceButtonText("+ New sales rep", isEn ? "+ New sales rep" : "+ New sales rep");
+  replaceButtonText("+ New company", isEn ? "+ New company" : "+ New company");
+  replaceButtonText("+ New company", isEn ? "+ New company" : "+ New company");
+  replaceButtonText("+ New contact", isEn ? "+ New contact" : "+ New contact");
+  replaceButtonText("+ New contact", isEn ? "+ New contact" : "+ New contact");
+  replaceButtonText("+ New deal", isEn ? "+ New deal" : "+ New deal");
+  replaceButtonText("+ New deal", isEn ? "+ New deal" : "+ New deal");
 
   var cs = document.getElementById("btnLangCs");
   var en = document.getElementById("btnLangEn");
@@ -202,176 +198,37 @@ function applyLang() { applyLangSimple(); }
 function setLang(lang) { setLangSimple(lang); }
 
 
-/* ===== CRM safe language patch v8 ===== */
-var crmLangV8 = localStorage.getItem("uae-crm-lang") || "cs";
 
-function crmSetLanguageSafe(lang) {
-  crmLangV8 = lang;
-  localStorage.setItem("uae-crm-lang", lang);
-  crmApplyLanguageSafe();
+/* ===== English-only UI normalization ===== */
+function normalizeEnglishUI(){
+  const map = new Map([
+    ["Uživatelé","Users"],["Obchodníci","Sales reps"],["Firmy","Companies"],["Kontakty","Contacts"],
+    ["Dealy / nabídky","Deals / Offers"],["Aktivity","Activities"],["Procesní kontrola","Process control"],
+    ["Odhlásit","Logout"],["Export firem","Export companies"],["Export dealů","Export deals"],["Export obchodníků","Export sales reps"],
+    ["+ Obchodník","+ Sales rep"],["+ Firma","+ Company"],["+ Kontakt","+ Contact"],["+ Deal","+ Deal"],
+    ["Nový obchodník","New sales representative"],["Úprava obchodníka","Edit sales representative"],
+    ["Nová firma","New company"],["Úprava firmy","Edit company"],
+    ["Nový kontakt","New contact"],["Úprava kontaktu","Edit contact"],
+    ["Nový deal","New deal"],["Úprava dealu","Edit deal"],
+    ["Nová aktivita","New activity"],["Úprava aktivity","Edit activity"],
+    ["Zavřít","Close"],["Uložit","Save"],["Jméno","Name"],["Firma","Company"],["Telefon","Phone"],
+    ["Obchodník","Sales rep"],["Poznámky","Notes"],["Emirát","Emirate"],["Další krok","Next step"],
+    ["Datum","Date"],["Pozice","Position"],["Název","Title"],["Produkt","Product"],["Fáze","Stage"],
+    ["Hodnota","Value"],["Měna","Currency"],["Pravděpodobnost","Probability"],["Nabídka","Offer"],
+    ["Kontakt","Contact"],["Předmět","Subject"],["Výsledek","Result"],["Typ","Type"]
+  ]);
+  document.querySelectorAll("button,.tab,h2,h3,label,span,div,p").forEach(el=>{
+    const t=(el.textContent||"").trim();
+    if(map.has(t)) el.textContent=map.get(t);
+  });
+  const h1=document.querySelector("h1");
+  if(h1) h1.textContent="UAE Sales Activity Control";
+  const q=document.getElementById("q");
+  if(q) q.placeholder="Search – filters companies, contacts, deals, sales reps and CORE numbers";
 }
-
-function crmApplyLanguageSafe() {
-  var isEn = crmLangV8 === "en";
-
-  var title = document.querySelector("h1");
-  if (title) title.textContent = isEn ? "UAE Sales Activity Control" : "Kontrola obchodních aktivit v SAE";
-
-  var lead = document.querySelector(".lead");
-  if (lead) {
-    lead.textContent = isEn
-      ? "Online CRM connected to Supabase. Login, registration, user approval and owner / user_admin / sales_user roles."
-      : "Online CRM napojené na Supabase. Přihlášení, registrace, schvalování uživatelů a role owner / user_admin / sales_user.";
-  }
-
-  var q = document.getElementById("q");
-  if (q) {
-    q.placeholder = isEn
-      ? "Search – filters companies, contacts, deals and sales reps"
-      : "Vyhledávání / Search – filtruje firmy, kontakty, dealy a obchodníky";
-  }
-
-  var hint = document.getElementById("searchHint");
-  if (hint) {
-    hint.textContent = isEn
-      ? "The search field below filters CRM records"
-      : "Vyhledávání níže filtruje záznamy v CRM";
-  }
-
-  crmReplaceButtonText("Odhlásit", isEn ? "Logout" : "Odhlásit");
-  crmReplaceButtonText("Logout", isEn ? "Logout" : "Odhlásit");
-
-  crmReplaceButtonText("Export obchodníků", isEn ? "Export sales reps" : "Export obchodníků");
-  crmReplaceButtonText("Export sales reps", isEn ? "Export sales reps" : "Export obchodníků");
-
-  crmReplaceButtonText("Export firem", isEn ? "Export companies" : "Export firem");
-  crmReplaceButtonText("Export companies", isEn ? "Export companies" : "Export firem");
-
-  crmReplaceButtonText("Export dealů", isEn ? "Export deals" : "Export dealů");
-  crmReplaceButtonText("Export deals", isEn ? "Export deals" : "Export dealů");
-
-  crmReplaceButtonText("+ Nový obchodník", isEn ? "+ New sales rep" : "+ Nový obchodník");
-  crmReplaceButtonText("+ New sales rep", isEn ? "+ New sales rep" : "+ Nový obchodník");
-
-  crmReplaceButtonText("+ Nová firma", isEn ? "+ New company" : "+ Nová firma");
-  crmReplaceButtonText("+ New company", isEn ? "+ New company" : "+ Nová firma");
-
-  crmReplaceButtonText("+ Nový kontakt", isEn ? "+ New contact" : "+ Nový kontakt");
-  crmReplaceButtonText("+ New contact", isEn ? "+ New contact" : "+ Nový kontakt");
-
-  crmReplaceButtonText("+ Nový deal", isEn ? "+ New deal" : "+ Nový deal");
-  crmReplaceButtonText("+ New deal", isEn ? "+ New deal" : "+ Nový deal");
-
-  var cs = document.getElementById("langCsTop");
-  var en = document.getElementById("langEnTop");
-  if (cs && en) {
-    cs.style.fontWeight = isEn ? "700" : "900";
-    en.style.fontWeight = isEn ? "900" : "700";
-  }
-}
-
-function crmReplaceButtonText(from, to) {
-  var buttons = document.querySelectorAll("button");
-  for (var i = 0; i < buttons.length; i++) {
-    if (buttons[i].textContent.trim() === from) {
-      buttons[i].textContent = to;
-    }
-  }
-}
-
-/* compatibility names used by older injected code */
-function setLang(lang) { crmSetLanguageSafe(lang); }
-function setLangSimple(lang) { crmSetLanguageSafe(lang); }
-function applyLang() { crmApplyLanguageSafe(); }
-function applyLangSimple() { crmApplyLanguageSafe(); }
-
-
-/* ===== CRM translation v10 ===== */
-var CRM_LANG='cs';
-
-function crmDict(){
- return CRM_LANG==='en' ? {
-   title:'UAE Sales Activity Control',
-   hint:'The search field below filters CRM records',
-   search:'Search – filters companies, contacts, deals and sales reps'
- } : {
-   title:'Kontrola obchodních aktivit v SAE',
-   hint:'Vyhledávání níže filtruje záznamy v CRM',
-   search:'Vyhledávání / Search – filtruje firmy, kontakty, dealy a obchodníky'
- };
-}
-
-function setCrmLangV10(lang){
- CRM_LANG=lang;
- localStorage.setItem('uae-crm-lang',lang);
- applyCrmLangV10();
-}
-
-function applyCrmLangV10(){
- try{
-   var d=crmDict();
-
-   var h1=document.querySelector('h1');
-   if(h1) h1.textContent=d.title;
-
-   var q=document.getElementById('q');
-   if(q) q.placeholder=d.search;
-
-   var hint=document.getElementById('searchHint');
-   if(hint) hint.textContent=d.hint;
-
-   var map = CRM_LANG==='en'
-   ? {
-      'Uživatelé':'Users',
-      'Obchodníci':'Sales reps',
-      'Firmy':'Companies',
-      'Kontakty':'Contacts',
-      'Dealy / nabídky':'Deals / Offers',
-      'Aktivity':'Activities',
-      'Procesní kontrola':'Process control',
-      'Export firem':'Export companies',
-      'Export dealů':'Export deals',
-      'Odhlásit':'Logout',
-      '+ Obchodník':'+ Sales rep',
-      '+ Firma':'+ Company',
-      '+ Kontakt':'+ Contact',
-      'Nový obchodník':'New sales representative',
-      'Zavřít':'Close',
-      'Uložit':'Save'
-     }
-   : {
-      'Users':'Uživatelé',
-      'Sales reps':'Obchodníci',
-      'Companies':'Firmy',
-      'Contacts':'Kontakty',
-      'Deals / Offers':'Dealy / nabídky',
-      'Activities':'Aktivity',
-      'Process control':'Procesní kontrola',
-      'Export companies':'Export firem',
-      'Export deals':'Export dealů',
-      'Logout':'Odhlásit',
-      '+ Sales rep':'+ Obchodník',
-      '+ Company':'+ Firma',
-      '+ Contact':'+ Kontakt',
-      'New sales representative':'Nový obchodník',
-      'Close':'Zavřít',
-      'Save':'Uložit'
-     };
-
-   document.querySelectorAll('button,.tab,h2,h3,label,span').forEach(function(el){
-      var t=(el.textContent||'').trim();
-      if(map[t]) el.textContent=map[t];
-   });
-
- }catch(e){
-   console.log('translation skipped',e);
- }
-}
-
-window.addEventListener('load',function(){
- CRM_LANG=localStorage.getItem('uae-crm-lang')||'cs';
- setTimeout(applyCrmLangV10,200);
-});
+window.addEventListener("load",()=>setTimeout(normalizeEnglishUI,150));
+const observerEnglishUI = new MutationObserver(()=>setTimeout(normalizeEnglishUI,50));
+observerEnglishUI.observe(document.body,{childList:true,subtree:true});
 
 init();
 setTimeout(crmApplyLanguageSafe, 0);
