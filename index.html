@@ -50,7 +50,7 @@ function contact(id){return data.contacts.find(x=>x.id===id)||{}}
 function deal(id){return data.deals.find(x=>x.id===id)||{}}
 function qmatch(o){let q=document.getElementById('q')?.value.toLowerCase()||'';return JSON.stringify(o).toLowerCase().includes(q)}
 function showFatal(t,m){let b=document.getElementById('fatal');if(b){b.classList.remove('hidden');b.innerHTML='<h2>'+esc(t)+'</h2><pre>'+esc(m)+'</pre>'}}
-async function init(){const res=await sb.auth.getSession();session=res.data.session;if(!session){renderAuth();return}const pr=await sb.from('profiles').select('*').eq('id',session.user.id).single();if(pr.error){showFatal('Profil se nepodařilo načíst',pr.error.message);return}profile=pr.data;renderShell();if(isApproved())await loadAll();else renderAll()}
+async function init(){const res=await sb.auth.getSession();session=res.data.session;if(!session){renderAuth();return}const pr=await sb.from('profiles').select('*').eq('id',session.user.id).single();if(pr.error){showFatal('Profil se nepodařilo načíst',pr.error.message);return}profile=pr.data;renderShell(); applyLangFull();if(isApproved())await loadAll();else renderAll()}
 function renderAuth(){app.classList.add('hidden');auth.innerHTML='<div class="grid2"><div class="card"><h1>Secure UAE CRM</h1><p class="muted">Přihlášení do zabezpečeného CRM.</p><pre>URL = '+esc(SUPABASE_URL)+'\nSupabase OK</pre></div><div class="card"><h2>Přihlášení</h2><label>E-mail<input id="loginEmail"></label><label>Heslo<input id="loginPassword" type="password"></label><button onclick="login()">Přihlásit</button><hr><h2>Registrace</h2><label>Jméno<input id="regName"></label><label>E-mail<input id="regEmail"></label><label>Heslo<input id="regPassword" type="password"></label><button class="secondary" onclick="register()">Registrovat</button><p id="msg" class="small muted"></p></div></div>'}
 function msg(x){document.getElementById('msg').textContent=x}
 async function login(){let r=await sb.auth.signInWithPassword({email:loginEmail.value.trim(),password:loginPassword.value});if(r.error){msg(r.error.message);return}location.reload()}
@@ -58,7 +58,7 @@ async function register(){let r=await sb.auth.signUp({email:regEmail.value.trim(
 async function logout(){await sb.auth.signOut();location.reload()}
 function renderShell(){auth.innerHTML='';app.classList.remove('hidden');who.innerHTML='Přihlášen: <b>'+esc(profile.email)+'</b> · role: <b>'+esc(profile.role)+'</b> · status: <b>'+esc(profile.status)+'</b>';document.querySelectorAll('.adminOnly').forEach(e=>e.classList.toggle('hidden',!isAdmin()));if(!isApproved()){pending.classList.remove('hidden');pending.textContent='Váš účet čeká na schválení nebo není aktivní.'}}
 async function loadAll(){const tables=isAdmin()?['profiles','sales_representatives','companies','contacts','deals','activities']:['sales_representatives','companies','contacts','deals','activities'];for(const t of tables){let r=await sb.from(t).select('*');if(r.error){showFatal('Chyba načtení '+t,r.error.message);return}data[t]=r.data||[]}renderShell();renderAll()}
-function renderTabs(){const keys=isAdmin()?['dashboard','users','salesreps','companies','contacts','deals','activities','process']:['dashboard','salesreps','companies','contacts','deals','activities','process'];const names={dashboard:'Dashboard',users:'Uživatelé',salesreps:'Obchodníci',companies:'Firmy',contacts:'Kontakty',deals:'Dealy / nabídky',activities:'Aktivity',process:'Procesní kontrola'};tabs.innerHTML=keys.map(k=>'<button class="tab '+(tab===k?'active':'')+'" onclick="setTab(\''+k+'\')">'+names[k]+'</button>').join('')}
+function renderTabs(){const keys=isAdmin()?['dashboard','users','salesreps','companies','contacts','deals','activities','process']:['dashboard','salesreps','companies','contacts','deals','activities','process'];const names={dashboard:'Dashboard',users:'Uživatelé',salesreps:'Obchodníci',companies:'Firmy',contacts:'Kontakty',deals:'Dealy / nabídky',activities:'Aktivity',process:'Procesní kontrola'};tabs.innerHTML=keys.map(k=>'<button class="tab '+(tab===k?'active':'')+'" onclick="setTab(\''+k+'\')">'+tabLabel(k)+'</button>').join('')}
 function setTab(k){tab=k;renderAll()}
 function renderAll(){renderTabs();document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));if(!document.getElementById(tab))tab='dashboard';document.getElementById(tab).classList.add('active');document.querySelectorAll('.adminOnly').forEach(e=>e.classList.toggle('hidden',!isAdmin()));if(!isApproved()){dashboard.innerHTML='<div class="notice">Váš účet čeká na schválení nebo není aktivní.</div>';return}renderDashboard();renderUsers();renderSalesReps();renderCompanies();renderContacts();renderDeals();renderActivities();renderProcess()}
 function repStats(id){let open=data.deals.filter(d=>d.sales_rep_id===id&&!['Won','Lost'].includes(d.stage));let acts=data.activities.filter(a=>a.sales_rep_id===id);return{companies:data.companies.filter(c=>c.sales_rep_id===id).length,pipeline:open.reduce((s,d)=>s+Number(d.value||0),0),activities:acts.length}}
@@ -108,12 +108,12 @@ const I18N = {
   }
 };
 let appLang = localStorage.getItem("uae-crm-lang") || "cs";
-function setLang(lang){
+function setLangOld(lang){
   appLang = lang;
   localStorage.setItem("uae-crm-lang", lang);
   applyLang();
 }
-function applyLang(){
+function applyLangOld(){
   const d = I18N[appLang] || I18N.cs;
   const h1 = document.querySelector("h1");
   if (h1) h1.textContent = d.title;
@@ -136,6 +136,85 @@ function refreshDealContacts(){
 }
 
 applyLang();
+
+const I18N_FULL = {
+  cs: {
+    title: "Kontrola obchodních aktivit v SAE",
+    lead: "Online CRM napojené na Supabase. Přihlášení, registrace, schvalování uživatelů a role owner / user_admin / sales_user.",
+    search: "Hledat firmu, obchodníka, kontakt, deal, CORE číslo...",
+    logout: "Odhlásit",
+    refresh: "Refresh",
+    exportReps: "Export obchodníků",
+    exportCompanies: "Export firem",
+    exportDeals: "Export dealů",
+    newRep: "+ Nový obchodník",
+    newCompany: "+ Nová firma",
+    newContact: "+ Nový kontakt",
+    newDeal: "+ Nový deal",
+    tabs: {dashboard:"Dashboard",users:"Uživatelé",salesreps:"Obchodníci",companies:"Firmy",contacts:"Kontakty",deals:"Dealy / nabídky",activities:"Aktivity",process:"Procesní kontrola"}
+  },
+  en: {
+    title: "UAE Sales Activity Control",
+    lead: "Online CRM connected to Supabase. Login, registration, user approval and owner / user_admin / sales_user roles.",
+    search: "Search company, sales rep, contact, deal, CORE number...",
+    logout: "Logout",
+    refresh: "Refresh",
+    exportReps: "Export sales reps",
+    exportCompanies: "Export companies",
+    exportDeals: "Export deals",
+    newRep: "+ New sales rep",
+    newCompany: "+ New company",
+    newContact: "+ New contact",
+    newDeal: "+ New deal",
+    tabs: {dashboard:"Dashboard",users:"Users",salesreps:"Sales reps",companies:"Companies",contacts:"Contacts",deals:"Deals / Offers",activities:"Activities",process:"Process control"}
+  }
+};
+let crmLang = localStorage.getItem("uae-crm-lang") || "cs";
+
+function setLangFull(lang) {
+  crmLang = lang;
+  localStorage.setItem("uae-crm-lang", lang);
+  applyLangFull();
+  if (typeof renderTabs === "function") renderTabs();
+}
+
+function tabLabel(key) {
+  const d = I18N_FULL[crmLang] || I18N_FULL.cs;
+  return (d.tabs && d.tabs[key]) || key;
+}
+
+function applyLangFull() {
+  const d = I18N_FULL[crmLang] || I18N_FULL.cs;
+  const h1 = document.querySelector("h1");
+  if (h1) h1.textContent = d.title;
+  const lead = document.querySelector(".lead");
+  if (lead) lead.textContent = d.lead;
+  const q = document.getElementById("q");
+  if (q) q.placeholder = d.search;
+  const replacements = new Map([
+    ["Odhlásit", d.logout], ["Logout", d.logout],
+    ["Refresh", d.refresh],
+    ["Export obchodníků", d.exportReps], ["Export sales reps", d.exportReps],
+    ["Export firem", d.exportCompanies], ["Export companies", d.exportCompanies],
+    ["Export dealů", d.exportDeals], ["Export deals", d.exportDeals],
+    ["+ Nový obchodník", d.newRep], ["+ New sales rep", d.newRep],
+    ["+ Nová firma", d.newCompany], ["+ New company", d.newCompany],
+    ["+ Nový kontakt", d.newContact], ["+ New contact", d.newContact],
+    ["+ Nový deal", d.newDeal], ["+ New deal", d.newDeal]
+  ]);
+  document.querySelectorAll("button").forEach(btn => {
+    const current = btn.textContent.trim();
+    if (replacements.has(current)) btn.textContent = replacements.get(current);
+  });
+  const cs = document.getElementById("btnLangCs");
+  const en = document.getElementById("btnLangEn");
+  if (cs && en) {
+    cs.style.fontWeight = crmLang === "cs" ? "900" : "700";
+    en.style.fontWeight = crmLang === "en" ? "900" : "700";
+  }
+}
+
+applyLangFull();
 init();
 </script>
 </body>
