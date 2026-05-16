@@ -87,13 +87,55 @@ function openCompany(id=''){let c=id?data.companies.find(x=>x.id===id):{company:
 async function saveCompany(id){await upsert('companies',id,form('fCompany'))}
 function openContact(id=''){let c=id?data.contacts.find(x=>x.id===id):{company_id:data.companies[0]?.id||'',name:'',position:'',email:'',phone:''};modal(id?'Edit contact':'New contact','<form id="fContact" class="formgrid"><label>Company<select name="company_id">'+companyOpts(c.company_id)+'</select></label><label>Name<input name="name" value="'+esc(c.name)+'"></label><label>Position<input name="position" value="'+esc(c.position||'')+'"></label><label>Email<input name="email" value="'+esc(c.email||'')+'"></label><label>Phone<input name="phone" value="'+esc(c.phone||'')+'"></label><div class="full"><button type="button" class="btn" onclick="saveContact(\''+id+'\')">Save</button></div></form>')}
 async function saveContact(id){await upsert('contacts',id,form('fContact'))}
-function openDeal(id=''){let d=id?data.deals.find(x=>x.id===id):{company_id:data.companies[0]?.id||'',contact_id:'',sales_rep_id:data.sales_representatives[0]?.id||'',title:'',product:'VarioLab+',value:0,currency:'USD',stage:'Lead',probability:20,offer_no:'',core_number:''};modal(id?'Edit deal':'New deal','<form id="fDeal" class="formgrid"><label>Company<select name="company_id">'+companyOpts(d.company_id)+'</select></label><label>Sales rep<select name="sales_rep_id">'+repOpts(d.sales_rep_id)+'</select></label><label>Contact<select name="contact_id">'+contactOpts(d.company_id,d.contact_id)+'</select></label><label>Title<input name="title" value="'+esc(d.title)+'"></label><label>Product<select name="product">'+opts(products,d.product)+'</select></label><label>Stage<select name="stage">'+opts(stages,d.stage)+'</select></label><label>Value<input type="number" name="value" value="'+esc(d.value||0)+'"></label><label>Currency<input name="currency" value="'+esc(d.currency||'USD')+'"></label><label>Probability<input type="number" name="probability" value="'+esc(d.probability||0)+'"></label><label>Offer<input name="offer_no" value="'+esc(d.offer_no||'')+'"></label><label>CORE<input name="core_number" value="'+esc(d.core_number||'')+'"></label><div class="full"><button type="button" class="btn" onclick="saveDeal(\''+id+'\')">Save</button></div></form>')}
+function openDeal(id=''){let d=id?data.deals.find(x=>x.id===id):{company_id:data.companies[0]?.id||'',contact_id:'',sales_rep_id:data.sales_representatives[0]?.id||'',title:'',product:'VarioLab+',value:0,currency:'USD',stage:'Lead',probability:20,offer_no:'',core_number:''};modal(id?'Edit deal':'New deal','<form id="fDeal" class="formgrid"><label>Company<select name="company_id" id="dealCompany" onchange="refreshDealContacts()">'+companyOpts(d.company_id)+'</select></label><label>Sales rep<select name="sales_rep_id">'+repOpts(d.sales_rep_id)+'</select></label><label>Contact<select name="contact_id" id="dealContact">'+contactOptsForCompany(d.company_id,d.contact_id)+'</select></label><label>Title<input name="title" value="'+esc(d.title)+'"></label><label>Product<select name="product">'+opts(products,d.product)+'</select></label><label>Stage<select name="stage">'+opts(stages,d.stage)+'</select></label><label>Value<input type="number" name="value" value="'+esc(d.value||0)+'"></label><label>Currency<input name="currency" value="'+esc(d.currency||'USD')+'"></label><label>Probability<input type="number" name="probability" value="'+esc(d.probability||0)+'"></label><label>Offer<input name="offer_no" value="'+esc(d.offer_no||'')+'"></label><label>CORE<input name="core_number" value="'+esc(d.core_number||'')+'"></label><div class="full"><button type="button" class="btn" onclick="saveDeal(\''+id+'\')">Save</button></div></form>')}
 async function saveDeal(id){let f=form('fDeal');f.value=Number(f.value||0);f.probability=Number(f.probability||0);if(!f.contact_id)delete f.contact_id;await upsert('deals',id,f)}
 function openActivity(id=''){let a=id?data.activities.find(x=>x.id===id):{company_id:data.companies[0]?.id||'',deal_id:'',subject:'',date:today(),result:'Planned'};modal(id?'Edit activity':'New activity','<form id="fAct" class="formgrid"><label>Company<select name="company_id">'+companyOpts(a.company_id)+'</select></label><label>Deal<select name="deal_id">'+dealOpts(a.company_id,a.deal_id)+'</select></label><label>Subject<input name="subject" value="'+esc(a.subject)+'"></label><label>Date<input type="date" name="date" value="'+esc(a.date||today())+'"></label><label>Result<input name="result" value="'+esc(a.result||'')+'"></label><div class="full"><button type="button" class="btn" onclick="saveActivity(\''+id+'\')">Save</button></div></form>')}
 async function saveActivity(id){let f=form('fAct');if(!f.deal_id)delete f.deal_id;await upsert('activities',id,f)}
 async function upsert(table,id,payload){payload.updated_by=profile.id;let r=id?await sb.from(table).update(payload).eq('id',id):await sb.from(table).insert(payload);if(r.error){alert(r.error.message);return}closeModal();await loadAll()}
 function exportCSV(table){if(!isAdmin())return;let rows=data[table]||[];downloadCSV('uae-crm-'+table+'.csv',rows)}
 function downloadCSV(filename,rows){if(!rows.length)return alert('Žádná data');let heads=[...new Set(rows.flatMap(r=>Object.keys(r)))],escCsv=v=>'"'+String(v??'').replaceAll('"','""')+'"',csv='\ufeff'+[heads.join(';'),...rows.map(r=>heads.map(h=>escCsv(r[h])).join(';'))].join('\n'),blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url)}
+
+const I18N = {
+  cs: {
+    title: "Kontrola obchodních aktivit v SAE",
+    lead: "Online CRM napojené na Supabase. Přihlášení, registrace, schvalování uživatelů a role owner / user_admin / sales_user.",
+    search: "Hledat firmu, obchodníka, kontakt, deal, CORE číslo..."
+  },
+  en: {
+    title: "UAE Sales Activity Control",
+    lead: "Online CRM connected to Supabase. Login, registration, user approval and owner / user_admin / sales_user roles.",
+    search: "Search company, sales rep, contact, deal, CORE number..."
+  }
+};
+let appLang = localStorage.getItem("uae-crm-lang") || "cs";
+function setLang(lang){
+  appLang = lang;
+  localStorage.setItem("uae-crm-lang", lang);
+  applyLang();
+}
+function applyLang(){
+  const d = I18N[appLang] || I18N.cs;
+  const h1 = document.querySelector("h1");
+  if (h1) h1.textContent = d.title;
+  const lead = document.querySelector(".lead");
+  if (lead) lead.textContent = d.lead;
+  const q = document.getElementById("q");
+  if (q) q.placeholder = d.search;
+}
+function contactOptsForCompany(companyId, selectedId){
+  return data.contacts
+    .filter(c => !companyId || c.company_id === companyId)
+    .map(c => '<option value="' + esc(c.id) + '" ' + (c.id === selectedId ? 'selected' : '') + '>' + esc(c.name || '') + '</option>')
+    .join('');
+}
+function refreshDealContacts(){
+  const companySelect = document.getElementById("dealCompany");
+  const contactSelect = document.getElementById("dealContact");
+  if (!companySelect || !contactSelect) return;
+  contactSelect.innerHTML = contactOptsForCompany(companySelect.value, "");
+}
+
+applyLang();
 init();
 </script>
 </body>
