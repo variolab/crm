@@ -1,9 +1,10 @@
-# UAE CRM Secure v4
+# UAE CRM Secure v5
 
-Opravy:
-- pevný přepínač CZ / EN v horní liště,
-- překlad hlavního nadpisu, popisu, vyhledávání, základních tlačítek a záložek,
-- zachována oprava kontaktů podle vybrané firmy u dealu.
+Oprava po chybě v4:
+- odstraněna chyba `applyLang is not defined`,
+- zachována oprava kontaktů podle vybrané firmy z v3,
+- přidána viditelná tlačítka CZ / EN,
+- překlad hlavního nadpisu, popisu, vyhledávání a základních tlačítek.
 
 Nasazení:
 1. ZIP rozbalte.
